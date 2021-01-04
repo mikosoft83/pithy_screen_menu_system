@@ -4,6 +4,8 @@
 
 This is an ESPHome YAML script that implements a menu system to show state of and control several entities from Home Assistant on a Pithy Screen device.
 
+Pithy Screen is based on D1 mini, has a rotary encoder with push, a switch and SSD1306 screen over I2C. See more on [ioios website](https://ioios.io) and [their Github repo](https://github.com/ioios-io).
+
 Rotary encoder is used to browse the menu, push on the rotary is used to either enter submenu or enter setting. Side switch is used to return from setting or return to previous menu level.
 
 ## Setup
