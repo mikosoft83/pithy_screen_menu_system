@@ -40,6 +40,8 @@ If any template sensors for HA have been generated, paste that config into the r
             value_template: ...
             ...
 
+_Don't forget to put the font file from the repo in your ESPHome config folder (where the yaml files are)._ Otherwise you'll get compilation errors.
+
 ### Manual configuration
 
 Setup of menu structure and functions is done in several places:
