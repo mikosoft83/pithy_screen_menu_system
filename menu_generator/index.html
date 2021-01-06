@@ -424,7 +424,7 @@ Scroll down for Home Assistant config<br /><br />
     if(t_attrib == "") t_ha_name = entity;
 	else {
 	  t_ha_name = "sensor.pithy_" + t_esph_name;
-	  t_hae = `${t_ha_name}:
+	  t_hae = `pithy_${t_esph_name}:
   value_template: "{{ state_attr('${entity}', '${t_attrib}') }}"`;
 	}
 
@@ -600,7 +600,7 @@ on_value:
     if(t_attrib == "") t_ha_name = entity;
 	else {
 	  t_ha_name = "sensor.pithy_" + t_esph_name;
-	  t_hae = `${t_ha_name}:
+	  t_hae = `pithy_${t_esph_name}:
   value_template: "{{ state_attr('${entity}', '${t_attrib}') }}"`;
 	}
 
@@ -749,7 +749,7 @@ on_value:
     if(t_attrib == "") t_ha_name = entity;
 	else {
 	  t_ha_name = "sensor.pithy_" + t_esph_name;
-	  t_hae = `${t_ha_name}:
+	  t_hae = `pithy_${t_esph_name}:
   value_template: "{{ state_attr('${entity}', '${t_attrib}') }}"`;
 	}
 
