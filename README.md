@@ -26,6 +26,19 @@ For each item you can use the preconfigured action on encoder change (the dropdo
 
 If you need help with the meaning of each setting hover your mouse over each label. You'll get a tooltip with some (hopefully) useful information. Also please refer to chapters 2.1 and 2.3 for definiton of menu functions and an explainer on the definiton of range for continuous value sensors.
 
+Once you're happy with your menu click __Create config__. Two text fields will be populated, one with ESPHome YAML config and the other with Home Assistant template sensor config.
+
+You can download the YAML file with the __Download config file__ button. Compile and upload the YAML file using ESPHome and your preferred method.
+
+If any template sensors for HA have been generated, paste that config into the respective config file in Home Assistant. This will be dependent on the structure of your yaml files and sensor configuration. The default is configuration.yaml and ``sensor:`` section like this:
+
+    sensor:
+    ... your sensors..
+      - platform: template
+        sensors:
+	  pithy_....
+	    value_template: ...
+
 ### Manual configuration
 
 Setup of menu structure and functions is done in several places:
