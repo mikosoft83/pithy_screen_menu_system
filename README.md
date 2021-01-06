@@ -10,6 +10,24 @@ Rotary encoder is used to browse the menu, push on the rotary is used to either 
 
 ## Setup
 
+There are two ways to setup the menu
+1. Using config generator
+2. Manual
+
+### Using config generator
+
+Config generator is in the [menu_generator](menu_generator) folder. The best way to use it is to clone/download the files to your computer and running from there.
+
+The menu generator doesn't do any sanity checks. You are in charge of filling in all the data correctly. Every field of every item must be filled in, the only exception is the "Attribute" field in case of menu items that won't use it. If you manage to make a mistake you will only find out during compile or operation so be careful. Checks may be added in future versions.
+
+To set up the menu structure use the Menu section. You can move the menu items around by dragging them by the large title. You can also drag items out of submenu to another menu level or submenu. __Remember there needs to be at least one item in each submenu!__ Failing that will cause crashes when running on the ESP.
+
+For each item you can use the preconfigured action on encoder change (the dropdown labeled "What to do on change") or you can type in your own code. The fields will expand when you click "Advanced settings". If you want to use one of the preconfigured actions but you want to modify it, select the desired action in the dropdown and then select "Custom service call".
+
+If you need help with the meaning of each setting hover your mouse over each label. You'll get a tooltip with some (hopefully) useful information. Also please refer to chapters 2.1 and 2.3 for definiton of menu functions and an explainer on the definiton of range for continuous value sensors.
+
+### Manual configuration
+
 Setup of menu structure and functions is done in several places:
 1. Setup of menu structure and data
 2. Setup of actual menu functions
