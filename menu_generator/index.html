@@ -1,0 +1,1684 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Pithy Screen Menu Generator</title>
+  <script src="html5sortable.min.js"></script>
+  <style>
+    body {
+	  font-family: sans-serif;
+	}
+	
+	h1 {
+	 font-size: 2em;
+	 margin: 10px;
+	}
+	
+	h2 {
+	 font-size: 1.5em;
+	 margin: 5px;
+	}
+	
+	.frame {
+	  margin: 5px;
+	  border: 10px solid #AFAFAF;
+	  padding: 5px;
+
+	}
+  
+    .item-base {
+	  /*border: 2px solid;*/
+	  margin: 5px;
+	  padding: 10px;
+	  background: #AFAFAF;
+	}
+	
+	.item-container {
+	  /*border: 10px solid #BFAFBF;*/
+	  margin: 0px;
+	}
+	
+	.item-content {
+	  margin-bottom: 2px;
+	}
+	
+    .item, .item-saver {
+	  /*border: 1px solid;*/
+	  margin-bottom: 10px;
+	  padding: 5px;
+	  background: #FFFFFF;
+	}
+	
+	h3 {
+	  margin: 0px;
+	  margin-bottom: 2px;
+	  font-size: 1.2em;
+	  cursor: move;
+	  color: #000080;
+	  display: inline;
+	}
+	
+	h3::before {
+	  content: "■ ";
+	}
+	
+	.item-saver h3 {
+	  cursor: auto;
+	}
+	
+	.small-link {
+	  font-size: 0.8em;
+	  text-decoration: underline;
+	  cursor: pointer;
+	}
+	
+	h6 {
+	  margin: 0px;
+	  margin-bottom: 2px;
+	  font-size: 1em;
+	  text-decoration: underline;
+	  cursor: pointer;
+	}
+	
+	label {
+	  margin: 0px;
+	  margin-bottom: 2px;
+	  position: relative;
+	}
+
+	input, select, textarea {
+	  margin: 0px 2px 2px 2px;
+	  background: #F0F0FF;
+	  border: 1px solid;
+	}
+
+	textarea {
+	  margin: 0px;
+	  margin-bottom: 2px;
+	  padding: 2px;
+	}
+
+    label .tooltip {
+      visibility: hidden;
+      background-color: #FFFFE0;
+	  border: 2px solid black;
+	  width: 300px;
+      text-align: center;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+	  bottom: 130%;
+      left: 0%;
+	}
+
+    label .tooltip::after {
+      content: "";
+      position: absolute;
+      top: 100%; /* At the bottom of the tooltip */
+      left: 5%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: black transparent transparent transparent;
+    }
+
+    label .tooltip-bottom {
+      visibility: hidden;
+      background-color: #FFFFE0;
+	  border: 2px solid black;
+	  width: 300px;
+      text-align: center;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+	  top: 130%;
+      left: 0%;
+	}
+
+    label .tooltip-bottom::after {
+      content: "";
+      position: absolute;
+      bottom: 100%; /* At the top of the tooltip */
+      left: 5%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: transparent transparent black transparent;
+    }
+
+    label:hover .tooltip {
+	  visibility: visible;
+	}
+
+    label:hover .tooltip-bottom {
+	  visibility: visible;
+	}
+
+    .add-button {
+	  background-color: #E0FFE0;
+	  border: 1px solid;
+	}
+ 
+    .del-button {
+	  background-color: #FFE0E0;
+	  border: 1px solid;
+	}
+	
+    .create-button {
+	  background-color: #D0D0FF;
+	  border: 1px solid;
+	}
+	
+	.service-data, .service-data-on, .service-data-off, .menu-values, .set-rotary, .esph-ent, .templ-ent {
+	  width: 40em;
+	}
+	
+	.sortable-placeholder {
+	  border: 1px solid;
+    }	  
+  </style>
+
+
+</head>
+<body onload="">
+<h1>Pithy Screen Menu Configurator</h1>
+<div class="frame">
+<h2>Basic</h2>
+<label>Unit name:<span class="tooltip-bottom">Name for this particular device, e.g. pithy_screen_bedroom. Must be lower case, no spaces, no symbols apart from udnerscores.</span></label>
+<input type="text" id="unit-name" value="pithy_screen_"><br />
+<label>Board platform:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
+<select id="board-platform">
+<option selected>ESP8266</option>
+</select>
+<label>Board name:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
+<select id="board-name">
+<option selected value="d1_mini">Wemos D1 mini</option>
+</select>
+</div>
+<div class="frame">
+<h2>WiFi</h2>
+<label>Your WiFi credentials:<span class="tooltip-bottom">Enter the WiFi credentials to which you want your device to connect to</span></label><br />
+<label>SSID:<span class="tooltip-bottom">WiFi name</span></label> <input type="text" id="wifi-ssid">
+<label>Password:</label> <input type="text" id="wifi-pass"><br />
+<label>Fallback WiFi AP credentials:<span class="tooltip-bottom">If connection fails, the device will create its own WiFi hotspot with these credentials</span></label><br />
+<label>SSID:<span class="tooltip-bottom">WiFi name</span></label> <input type="text" id="ap-wifi-ssid" value="pithy">
+<label>Password:</label> <input type="text" id="ap-wifi-pass" value="pithypithy"><br />
+</div>
+<div class="frame">
+<h2>Management</h2>
+<label>API password:<span class="tooltip-bottom">For connecting to Home Assistant</span></label> <input type="text" id="api-pass" value="pithy"><br />
+<label>OTA password:<span class="tooltip-bottom">For over-the-air updates (flashing)</span></label> <input type="text" id="ota-pass" value="pithy"><br />
+</div>
+<div>
+<input type="hidden" id="direct-children" class="direct-children" value="0"><input type="hidden" id="all-children" class="all-children" value="0">
+<div>
+<div class="item-base" id="base">
+  <div class="item-saver"><h2>Menu</h2></div>
+  <div class="item-saver"><h3>Screensaver</h3></div>
+  <div class="item-container"></div>
+  <button onclick="addItem(this)" class="add-button">Add new item</button>
+</div>
+</div>
+</div>
+<div class="frame">
+<button class="create-button" onclick="startCreateMenu(document.getElementById('base').getElementsByClassName('item-container')[0])" class="calc-children">Create config</button>
+<button  class="create-button" onclick="download(document.getElementById('unit-name').value+'.yaml', document.getElementById('pithy-config').value)">Download config file</button><br/>
+Scroll down for Home Assistant config<br /><br />
+<div id="config-out">
+<label>Pithy config:</label><br />
+<textarea id="pithy-config" rows="40" style="width:100%"></textarea><br/>
+<label>Home Assistant config:<span class="tooltip-bottom">Put this into your "sensor:" config in HA config file</span></label><br />
+<textarea id="ha-config" rows="40" style="width:100%"></textarea><br/>
+</div>
+</div>
+
+<script>
+  sortable('.item-container', {
+    items: '.item',
+	handle: "h3",
+	acceptFrom: ".item-container"
+  });
+  
+  var menuItemBase = `
+    <h3>Menu item</h3> <span class="small-link" onclick="showHide(this.parentElement.getElementsByClassName('item-content')[0])">Show/hide settings</span><br />
+	<label>Label:<span class="tooltip">This is the text that will show on the screen</span></label><input id="label" class="label" type="text">
+    <label>Type:<span class="tooltip">What should this menu item do</span></label>
+	<select id="type" onchange="fillItemContent(this)">
+	  <option>-- Please choose one --</option>
+	  <option value="1">Display value</option>
+	  <option value="2">Submenu</option>
+	  <option value="3">Continuous setting</option>
+	  <option value="4">Binary setting</option>
+	  <option value="5">Action button</option>
+	  <option value="6">Continuous with confirmation</option>
+	</select>
+	<input type="hidden" id="direct-children" class="direct-children" value="0"><input type="hidden" id="all-children" class="all-children" value="0">
+	<div id="item-content" class="item-content">
+	</div>
+	<button onclick="deleteItem(this)" class="del-button">Delete this item</button>
+	`;
+ 
+  var menuItemContainerBase = `
+<div class="item-base">
+  <div class="item-container"></div>
+  <button onclick="addItem(this)" class="add-button">Add new item</button>
+</div>
+  `;
+ 
+  function showHide(e) {
+    if (e.style.display === "none") {
+      e.style.display = "block";
+    } else {
+      e.style.display = "none";
+    }
+  }
+  
+  function fillItemContent(e) {
+    var o = e.parentElement.getElementsByClassName("item-content")[0];
+	e.parentElement.getElementsByTagName("h3")[0].innerText = e.selectedIndex == 0 ? "Menu item" : e.options[e.selectedIndex].text;
+	var i = e.value;
+	var t = "";
+	switch(i) {
+	  case "1": t = `<label>Entity to display:<span class="tooltip">Home Assistant entity name</span></label><input id="entity" class="entity" type="text" oninput="fillDispCode(this)"> <label>Attribute (leave empty if none):<span class="tooltip">Attribute from Home Assistant entity</span></label><input id="attribute" class="attribute" type="text" oninput="fillDispCode(this)"><br />
+      <label>Display factor:<span class="tooltip">Number to multiply the HA entity value by. Useful if the range is e.g. 0 - 1 but you want to show it as 0 - 100.</span></label><input id="dfactor" class="dfactor" type="number" oninput="fillDispCode(this)" value="1"><br />
+	  <input type="checkbox" id="is-bin" class="is-bin" oninput="fillDispCode(this)"><label>Binary entity<span class="tooltip">Uncheck if entity has range of values, check if it is only on or off</span></label><br />
+	  <h6 onclick="showHide(this.parentElement.getElementsByClassName('adv-set')[0])">Advanced settings</h6>
+	  <div style="display: none" class="adv-set">
+	  <label>Code for menu value display:</label><br /><textarea id="menu-values" class="menu-values" rows="2"></textarea><br />
+	  <label>ESPHome entity:</label><br /><textarea id="esph-ent" class="esph-ent" rows="14"></textarea><br />
+	  <label>HomeAssistant template entity:</label><br /><textarea id="templ-ent" class="templ-ent" rows="3"></textarea><br />
+	  </div>
+	  `; break;
+	  case "2":
+	  t = menuItemContainerBase;
+	  break;
+	  case "3": t = `
+	  <label>Entity to change:<span class="tooltip">Home Assistant entity name</span></label><input id="entity" class="entity" type="text" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0])"><label>Attribute (leave empty if none):<span class="tooltip">Attribute from Home Assistant entity</span></label><input id="attribute" class="attribute" type="text" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0])"><br />
+	  <label>Range from:<span class="tooltip">Lowest value for this entity or attribute</span></label><input id="from" class="from" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0])" value="0"><label>to:<span class="tooltip">Highest value for this entity or attribute</span></label><input id="to" class="to" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0])" value="100"><label>step:<span class="tooltip">On each turn of the dial the entity or attribute value will be incremented by this number</span></label><input id="step" class="step" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0])" value="1"><br />
+	  <label>Display factor:<span class="tooltip">Number to multiply the HA entity value by. Useful if the range is e.g. 0 - 1 but you want to show it as 0 - 100.</span></label><input id="dfactor" class="dfactor" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0])" value="1"><br />
+	  <label>What to do on change:<span class="tooltip">Choose from predefined actions. If you want to create your own, choose custom and click Advanced settings. If you want to modify one of the predefined, first choose the predefined action, then Custom.</span></label>
+	  <select onchange="fillContCode(this, true)">
+	  <option>-- Please choose one --</option>
+	  <option value="0">Custom service call</option>
+	  <option value="1">Climate temperature</option>
+	  <option value="2">Climate humidity</option>
+	  <option value="3">Cover position</option>
+	  <option value="4">Cover tilt</option>
+	  <option value="5">Humidifier humidity</option>
+	  <option value="6">Light brightness</option>
+	  <option value="7">Light temperature</option>
+	  <option value="8">Media player volume</option>
+	  </select><br />
+	  <h6 onclick="showHide(this.parentElement.getElementsByClassName('adv-set')[0])">Advanced settings</h6>
+	  <div style="display: none" class="adv-set">
+	  <label>Service data:</label><br /><textarea id="service-data" class="service-data" rows="7"></textarea><br />
+	  <label>Code for menu value display:</label><br /><textarea id="menu-values" class="menu-values" rows="2"></textarea><br />
+	  <label>Code to set rotary:</label><br /><textarea id="set-rotary" class="set-rotary" rows="2"></textarea><br />
+	  <label>ESPHome entity:</label><br /><textarea id="esph-ent" class="esph-ent" rows="14"></textarea><br />
+	  <label>HomeAssistant template entity:</label><br /><textarea id="templ-ent" class="templ-ent" rows="3"></textarea><br />
+	  </div>
+	  `; break;
+	  case "4": t = `
+	  <label>Entity to change:<span class="tooltip">Home Assistant entity name</span></label><input id="entity" class="entity" type="text" oninput="fillBinCode(this.parentElement.getElementsByTagName('select')[0])"><label>Attribute (leave empty if none):<span class="tooltip">Attribute from Home Assistant entity</span></label><input id="attribute" class="attribute" type="text" oninput="fillBinCode(this.parentElement.getElementsByTagName('select')[0])"><br />
+	  <label>What to do on change:<span class="tooltip">Choose from predefined actions. If you want to create your own, choose custom and click Advanced settings. If you want to modify one of the predefined, first choose the predefined action, then Custom.</span></label>
+	  <select onchange="fillBinCode(this, true)">
+	  <option>-- Please choose one --</option>
+	  <option value="0">Custom service calls</option>
+	  <option value="1">Automation on/off</option>
+	  <option value="2">Fan on/off</option>
+	  <option value="3">Humidifier on/off</option>
+	  <option value="4">Light on/off</option>
+	  <option value="5">Lock lock/unlock</option>
+	  <option value="6">Media player shuffle on/off</option>
+	  <option value="7">Switch on/off</option>
+	  </select><br />
+	  <h6 onclick="showHide(this.parentElement.getElementsByClassName('adv-set')[0])">Advanced settings</h6>
+	  <div style="display: none" class="adv-set">
+	  <label>Service data for ON:</label><br /><textarea id="service-data-on" class="service-data-on" rows="6"></textarea><br />
+	  <label>Service data for OFF:</label><br /><textarea id="service-data-off" class="service-data-off" rows="6"></textarea><br />
+	  <label>Code for menu value display:</label><br /><textarea id="menu-values" class="menu-values" rows="2"></textarea><br />
+	  <label>Code to set rotary:</label><br /><textarea id="set-rotary" class="set-rotary" rows="2"></textarea><br />
+	  <label>ESPHome entity:</label><br /><textarea id="esph-ent" class="esph-ent" rows="14"></textarea><br />
+	  <label>HomeAssistant template entity:</label><br /><textarea id="templ-ent" class="templ-ent" rows="3"></textarea><br />
+	  </div>
+	  `; break;
+	  case "5": t = `
+	  <label>Entity to perform action on:<span class="tooltip">Home Assistant entity name. If you want to trigger and automation or a script, put the name here.</span></label><input id="entity" class="entity" type="text" oninput="fillActCode(this.parentElement.getElementsByTagName('select')[0])"><br />
+	  <label>What to do:<span class="tooltip">Choose from predefined actions. If you want to create your own, choose custom and click Advanced settings. If you want to modify one of the predefined, first choose the predefined action, then Custom.</span></label>
+	  <select onchange="fillActCode(this, true)">
+	  <option>-- Please choose one --</option>
+	  <option value="0">Custom service call</option>
+	  <option value="1">Trigger automation</option>
+	  <option value="2">Trigger script</option>
+	  <option value="3">Open cover</option>
+	  <option value="4">Close cover</option>
+	  <option value="5">Media player play/pause</option>
+	  <option value="6">Start vacuum</option>
+	  <option value="7">Return vacuum to base</option>
+	  <option value="8">Pair Zigbee device</option>
+	  <option value="9">Restart HomeAssistant</option>
+	  </select><br />
+	  <h6 onclick="showHide(this.parentElement.getElementsByClassName('adv-set')[0])">Advanced settings</h6>
+	  <div style="display: none" class="adv-set">
+	  <label>Service data:</label><br /><textarea id="service-data" class="service-data" rows="6"></textarea><br />
+	  </div>
+	  `; break;
+	  case "6": t = `
+	  <label>Entity to change:<span class="tooltip">Home Assistant entity name</span></label><input id="entity" class="entity" type="text" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0], false, true)"><label>Attribute (leave empty if none):<span class="tooltip">Attribute from Home Assistant entity</span></label><input id="attribute" class="attribute" type="text" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0], false, true)"><br />
+	  <label>Range from:<span class="tooltip">Lowest value for this entity or attribute</span></label><input id="from" class="from" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0], false, true)" value="0"><label>to:<span class="tooltip">Highest value for this entity or attribute</span></label><input id="to" class="to" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0], false, true)" value="100"><label>step:<span class="tooltip">On each turn of the dial the entity or attribute value will be incremented by this number</span></label><input id="step" class="step" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0], false, true)" value="1"><br />
+	  <label>Display factor:<span class="tooltip">Number to multiply the HA entity value by. Useful if the range is e.g. 0 - 1 but you want to show it as 0 - 100.</span></label><input id="dfactor" class="dfactor" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0], false, true)" value="1"><br />
+	  <label>What to do on change:<span class="tooltip">Choose from predefined actions. If you want to create your own, choose custom and click Advanced settings. If you want to modify one of the predefined, first choose the predefined action, then Custom.</span></label>
+	  <select onchange="fillContCode(this, true, true)">
+	  <option>-- Please choose one --</option>
+	  <option value="0">Custom service call</option>
+	  <option value="1">Climate temperature</option>
+	  <option value="2">Climate humidity</option>
+	  <option value="3">Cover position</option>
+	  <option value="4">Cover tilt</option>
+	  <option value="5">Humidifier humidity</option>
+	  <option value="6">Light brightness</option>
+	  <option value="7">Light temperature</option>
+	  <option value="8">Media player volume</option>
+	  </select><br />
+	  <h6 onclick="showHide(this.parentElement.getElementsByClassName('adv-set')[0])">Advanced settings</h6>
+	  <div style="display: none" class="adv-set">
+	  <label>Service data:</label><br /><textarea id="service-data" class="service-data" rows="7"></textarea><br />
+	  <label>Code for menu value display:</label><br /><textarea id="menu-values" class="menu-values" rows="2"></textarea><br />
+	  <label>Code to set rotary:</label><br /><textarea id="set-rotary" class="set-rotary" rows="2"></textarea><br />
+	  <label>ESPHome entity:</label><br /><textarea id="esph-ent" class="esph-ent" rows="14"></textarea><br />
+	  <label>HomeAssistant template entity:</label><br /><textarea id="templ-ent" class="templ-ent" rows="3"></textarea><br />
+	  </div>
+	  `; break;
+    }
+	o.innerHTML = t;
+	
+	if(i == 2) addItem(e.parentElement.getElementsByClassName("item-base")[0].getElementsByClassName("add-button")[0]);
+  }
+
+  function fillDispCode(e) {
+	var entity = e.parentElement.getElementsByClassName("entity")[0].value;
+
+    var e_menuval = e.parentElement.getElementsByClassName("menu-values")[0];
+
+    var e_esphe = e.parentElement.getElementsByClassName("esph-ent")[0];
+
+    var e_hae = e.parentElement.getElementsByClassName("templ-ent")[0];
+
+	var e_attribute = e.parentElement.getElementsByClassName("attribute")[0];
+	var attribute = e_attribute.value;
+
+	var e_dfact = e.parentElement.getElementsByClassName("dfactor")[0];
+	var dfact = e_dfact.value;
+
+	var isbin = e.parentElement.getElementsByClassName("is-bin")[0].checked;
+
+	var t_attrib = attribute;
+	var t_menuval = "";
+	var t_esphe = "";
+	var t_hae = "";
+	
+	var t_ha_name = "";
+	var t_esph_name = "";
+	
+	t_esph_name = entity.replace(/\./g, "_") + (t_attrib == "" ? "" : "_" + t_attrib);
+
+    if(t_attrib == "") t_ha_name = entity;
+	else {
+	  t_ha_name = "sensor.pithy_" + t_esph_name;
+	  t_hae = `${t_ha_name}:
+  value_template: "{{ state_attr('${entity}', '${t_attrib}') }}"`;
+	}
+
+	t_esphe = `name: "HA sensor ${t_ha_name}"
+entity_id: ${t_ha_name}
+id: ${t_esph_name}
+internal: true
+on_value:
+  then:
+    # Logic to correctly update menu values
+    - script.execute: menu_values
+    - if:
+        condition:
+          lambda: 'return id(menu_set_mode);'
+        then:
+          - script.execute: menu_set_rotary
+    # End of menu values logic`;
+
+	if(isbin)
+	  t_menuval = "id(menu_current_value) = id(" + t_esph_name + ").state ? 1 : 0; break;" ;
+	else
+	  t_menuval = "id(menu_current_value) = id(" + t_esph_name + ").state" + (dfact == 1 ? "" : " * " + dfact) + "; break;";
+	
+	e_esphe.value = t_esphe;
+	
+	e_hae.value = t_hae;
+	
+	e_menuval.value = t_menuval;
+	
+  }
+
+  function fillContCode(e, r = false, c = false) {
+	var i = e.value;
+
+	var entity = e.parentElement.getElementsByClassName("entity")[0].value;
+
+    var e_serv = e.parentElement.getElementsByClassName("service-data")[0];
+
+    var e_menuval = e.parentElement.getElementsByClassName("menu-values")[0];
+
+    var e_srot = e.parentElement.getElementsByClassName("set-rotary")[0];
+
+    var e_esphe = e.parentElement.getElementsByClassName("esph-ent")[0];
+
+    var e_hae = e.parentElement.getElementsByClassName("templ-ent")[0];
+
+	var e_attribute = e.parentElement.getElementsByClassName("attribute")[0];
+	var attribute = e_attribute.value;
+
+	var e_from = e.parentElement.getElementsByClassName("from")[0];
+	var from = e_from.value
+
+	var e_to = e.parentElement.getElementsByClassName("to")[0];
+	var to = e_to.value;
+
+	var e_step = e.parentElement.getElementsByClassName("step")[0];
+	var step = e_step.value;
+
+	var e_dfact = e.parentElement.getElementsByClassName("dfactor")[0];
+	var dfact = e_dfact.value;
+
+	var range = to - from;
+
+	var t_attrib = attribute;
+	var t_serv = "";
+	var t_menuval = "";
+	var t_rotary = "";
+	var t_esphe = "";
+	var t_hae = "";
+	
+	var tss = "";
+	var tsd = "";
+	
+	var t_ha_name = "";
+	var t_esph_name = "";
+	
+	switch(i) {
+	
+	  case "0": return;	break;
+	
+	  case "1":  
+	  tss = "climate.set_temperature";
+	  tsd = "temperature";
+	  t_attrib = "temperature";
+	  if(r) from = "";
+	  if(r) to = "";
+	  if(r) step = "";
+	  if(r) dfact = 1;
+	  break;
+	
+	  case "2":
+      tss = "climate.set_humidity";
+      tsd = "humidity";
+	  t_attrib = "humidity";
+	  if(r) from = 0;
+	  if(r) to = 100;
+	  if(r) step = 1;
+	  if(r) dfact = 1;
+	  break;
+	
+	  case "3":
+      tss = "cover.set_cover_position";
+      tsd = "position"; 
+	  t_attrib = "current_position";
+	  if(r) from = 0;
+	  if(r) to = 100;
+	  if(r) step = 1;
+	  if(r) dfact = 1;
+	  break;
+	
+	  case "4":
+      tss = "cover.set_cover_tilt";
+      tsd = "tilt";
+	  t_attrib = "tilt";
+	  if(r) from = 0;
+	  if(r) to = 100;
+	  if(r) step = 1;
+	  if(r) dfact = 1;
+	  break;
+	
+	  case "5":
+      tss = "humidifier.set_humidity";
+      tsd = "humidity";
+	  t_attrib = "humidity";
+	  if(r) from = 0;
+	  if(r) to = 100;
+	  if(r) step = 1;
+	  if(r) dfact = 1;
+	  break;
+	
+	  case "6":
+      tss = "light.turn_on";
+      tsd = "brightness";
+	  t_attrib = "brightness";
+	  if(r) from = 0;
+	  if(r) to = 255;
+	  if(r) step = 1;
+	  if(r) dfact = 1;
+	  break;
+	
+	  case "7":
+      tss ="light.turn_on";
+      tsd = "color_temp";
+	  t_attrib = "color_temp";
+	  if(r) from = "";
+	  if(r) to = "";
+	  if(r) step = 1;
+	  if(r) dfact = 1;
+	  break;
+	
+	  case "8":
+      tss ="media_player.volume_set";
+      tsd = "volume_level";
+	  t_attrib = "volume_level";
+	  if(r) from = 0;
+	  if(r) to = 1;
+	  if(r) step = 0.01;
+	  if(r) dfact = 100;
+	  break;
+	
+    }
+
+    t_serv = `homeassistant.service:
+  variables:
+    x: 'return ` + (from == 0 ? "" : from + " + ") + `id(rotary_dial).state` + (step == 1 ? "" : "*" + step) + `;'
+  service: ${tss}
+  data_template:
+    entity_id: ${entity}
+    ${tsd}: '{{ x }}'`;
+
+	t_esph_name = entity.replace(/\./g, "_") + (t_attrib == "" ? "" : "_" + t_attrib);
+
+    if(t_attrib == "") t_ha_name = entity;
+	else {
+	  t_ha_name = "sensor.pithy_" + t_esph_name;
+	  t_hae = `${t_ha_name}:
+  value_template: "{{ state_attr('${entity}', '${t_attrib}') }}"`;
+	}
+
+	t_esphe = `name: "HA sensor ${t_ha_name}"
+entity_id: ${t_ha_name}
+id: ${t_esph_name}
+internal: true
+on_value:
+  then:
+    # Logic to correctly update menu values
+    - script.execute: menu_values
+    - if:
+        condition:
+          lambda: 'return id(menu_set_mode);'
+        then:
+          - script.execute: menu_set_rotary
+    # End of menu values logic`;
+
+    t_rotary = "id(rotary_dial).set_value(round(" + (step == 1 ? "" : "(") + "id(" + t_esph_name + ").state" + (from == 0 ? "" : " - " + from) + (step == 1 ? "" : ")/" + step) + ")); break;";
+
+    if(c)
+	  t_menuval = "id(menu_current_value) = id(menu_set_mode) ? " + (from == 0 ? "" : from + " + ") + "id(rotary_dial).state" + (step == 1 ? "" : "*" + step) + " : id(" + t_esph_name + ").state" + (dfact == 1 ? "" : " * " + dfact) + "; break;";
+	else
+	  t_menuval = "id(menu_current_value) = id(" + t_esph_name + ").state" + (dfact == 1 ? "" : " * " + dfact) + "; break;";
+	
+	e_serv.value = t_serv;
+
+	if(!(t_attrib == "")) e_attribute.value = t_attrib;
+	
+	e_esphe.value = t_esphe;
+	
+	e_hae.value = t_hae;
+
+	e_from.value = from;
+
+	e_to.value = to;
+
+	e_step.value = step;
+	
+	e_dfact.value = dfact;
+	
+	e_srot.value = t_rotary;
+	
+	e_menuval.value = t_menuval;
+	
+  }
+
+  function fillBinCode(e, r = false) {
+	var i = e.value;
+
+	var entity = e.parentElement.getElementsByClassName("entity")[0].value;
+
+    var e_serv_on = e.parentElement.getElementsByClassName("service-data-on")[0];
+
+    var e_serv_off = e.parentElement.getElementsByClassName("service-data-off")[0];
+
+    var e_menuval = e.parentElement.getElementsByClassName("menu-values")[0];
+
+    var e_srot = e.parentElement.getElementsByClassName("set-rotary")[0];
+
+    var e_esphe = e.parentElement.getElementsByClassName("esph-ent")[0];
+
+    var e_hae = e.parentElement.getElementsByClassName("templ-ent")[0];
+
+	var e_attribute = e.parentElement.getElementsByClassName("attribute")[0];
+	var attribute = e_attribute.value;
+
+	var t_attrib = attribute;
+	var t_serv_on = "";
+	var t_serv_off = "";
+	var t_menuval = "";
+	var t_rotary = "";
+	var t_esphe = "";
+	var t_hae = "";
+	
+	var tsson = "";
+	var tssoff = "";
+	var tsdon = "";
+	var tsdoff = "";
+	
+	var t_ha_name = "";
+	var t_esph_name = "";
+	
+	switch(i) {
+	
+	  case "0": return;	break;
+	
+	  case "1":  
+	  tsson = "automation.turn_on";
+	  tssoff = "automation.turn_off";
+      t_attrib = "";
+	  break;
+	
+	  case "2":  
+	  tsson = "fan.turn_on";
+	  tssoff = "fan.turn_off";
+      t_attrib = "";
+	  break;
+
+	  case "3":  
+	  tsson = "humidifier.turn_on";
+	  tssoff = "humidifier.turn_off";
+      t_attrib = "";
+	  break;
+	
+	  case "4":  
+	  tsson = "light.turn_on";
+	  tssoff = "light.turn_off";
+      t_attrib = "";
+	  break;
+	
+	  case "5":  
+	  tsson = "lock.lock";
+	  tssoff = "lock.unlock";
+      t_attrib = "";
+	  break;
+	
+	  case "6":  
+	  tsson = "media_player.shuffle_set";
+	  tssoff = "media_player.shuffle_set";
+      t_attrib = "shuffle";
+	  tsdon = "\n    shuffle: true";
+	  tsdoff = "\n    shuffle: false";
+	  break;
+	
+	  case "7":  
+	  tsson = "switch.turn_on";
+	  tssoff = "switch.turn_off";
+      t_attrib = "";
+	  break;
+	
+    }
+
+    t_serv_on = `homeassistant.service:
+  service: ${tsson}
+  data:
+    entity_id: ${entity}${tsdon}`;
+
+    t_serv_off = `homeassistant.service:
+  service: ${tssoff}
+  data:
+    entity_id: ${entity}${tsdoff}`;
+
+	t_esph_name = entity.replace(/\./g, "_") + (t_attrib == "" ? "" : "_" + t_attrib);
+
+    if(t_attrib == "") t_ha_name = entity;
+	else {
+	  t_ha_name = "sensor.pithy_" + t_esph_name;
+	  t_hae = `${t_ha_name}:
+  value_template: "{{ state_attr('${entity}', '${t_attrib}') }}"`;
+	}
+
+	t_esphe = `name: "HA sensor ${t_ha_name}"
+entity_id: ${t_ha_name}
+id: ${t_esph_name}
+internal: true
+on_state:
+  then:
+    # Logic to correctly update menu values
+    - script.execute: menu_values
+    - if:
+        condition:
+          lambda: 'return id(menu_set_mode);'
+        then:
+          - script.execute: menu_set_rotary
+    # End of menu values logic`;
+
+    t_rotary = "id(rotary_dial).set_value(id(" + t_esph_name + ").state ? 1 : 0); break;";
+
+    t_menuval = "id(menu_current_value) = id(" + t_esph_name + ").state ? 1 : 0; break;";
+	
+	e_serv_on.value = t_serv_on;
+
+	e_serv_off.value = t_serv_off;
+
+	e_attribute.value = t_attrib;
+	
+	e_esphe.value = t_esphe;
+	
+	e_hae.value = t_hae;
+	
+	e_srot.value = t_rotary;
+	
+	e_menuval.value = t_menuval;
+	
+  }
+
+  function fillActCode(e, r = false){
+	var i = e.value;
+
+	var entity = e.parentElement.getElementsByClassName("entity")[0].value;
+
+    var e_serv = e.parentElement.getElementsByClassName("service-data")[0];
+
+	var t_serv = "";
+
+	var tss = "";
+	var tsd = "";
+	
+	switch(i) {
+	
+	  case "0": return;	break;
+	
+	  case "1":  
+	  tss = "automation.trigger";
+	  tsd = "entity_id: " + entity;
+	  break;
+	
+	  case "2":  
+	  tss = entity;
+	  tsd = "";
+	  break;
+	
+	  case "3":  
+	  tss = "cover.open_cover";
+	  tsd = "entity_id: " + entity;
+	  break;
+	
+	  case "4":  
+	  tss = "cover.close_cover";
+	  tsd = "entity_id: " + entity;
+	  break;
+	
+	  case "5":  
+	  tss = "media_player.media_play_pause";
+	  tsd = "entity_id: " + entity;
+	  break;
+	
+	  case "6":  
+	  tss = "vacuum.start";
+	  tsd = "entity_id: " + entity;
+	  break;
+	
+	  case "7":  
+	  tss = "vacuum.return_to_base";
+	  tsd = "entity_id: " + entity;
+	  break;
+	
+	  case "8":  
+	  tss = "zha.permit";
+	  tsd = "";
+	  break;
+	
+	  case "9":  
+	  tss = "homeassistant.restart";
+	  tsd = "";
+	  break;
+	
+    }
+
+    t_serv = `homeassistant.service:
+  service: ${tss}
+  data:
+    ${tsd}`;
+
+	e_serv.value = t_serv;
+
+  }
+
+  function deleteItem(e) {
+    var o = e.parentElement;
+	var l = o.parentElement;
+	var n = l.getElementsByClassName("item").length;
+	if(n > 1) o.remove();
+    sortable('.item-container', 'reload');
+  }
+  
+  function addItem(e) {
+    var o = e.parentElement.getElementsByClassName("item-container")[0];
+	var n = document.createElement("div");
+	n.setAttribute("class", "item");
+	n.innerHTML = menuItemBase;
+	o.appendChild(n);
+    sortable('.item-container', 'reload');
+  }
+  
+  function download(filename, text) {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+  }
+
+  function calcChildren(e) {
+    var items = e.children;
+	var length = items.length;
+	var e_direct = e.parentElement.parentElement.parentElement.getElementsByClassName("direct-children")[0];
+	var e_total = e.parentElement.parentElement.parentElement.getElementsByClassName("all-children")[0];
+	var total = e_direct.value = length;
+	
+	for(var i=0; i<length; i++){
+	  if(items[i].getElementsByTagName("select")[0].value == 2){
+	    // item-content -> item-base -> item-container
+	    var e_next = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("item-base")[0].getElementsByClassName("item-container")[0];
+	    total += calcChildren(e_next);
+	  }
+	}
+	
+	e_total.value = total;
+    return total;
+	
+  }
+
+  var menu_i = 1;
+  var menu_labels = ["Saver"];
+  var menu_functions = [0];
+  var menu_child = [0];
+  var menu_length = [0];
+
+  var menu_values_script = "";
+  var menu_rotary_script = "";			
+  var menu_actions_script = "";
+  
+  var ha_entities = "";
+  var esph_sensors = "";
+  var esph_bin_sensors = "";
+  
+  var menu_depth = 1;
+  var menu_size = 1;
+  
+  var esph_config = "";
+  var ha_config = "";
+  
+  function startCreateMenu(e) {
+    menu_i = 1;
+    menu_labels = ["\"Saver\""];
+    menu_functions = [0];
+    menu_child = [0];
+    menu_length = [0];
+
+    menu_values_script = "";
+    menu_rotary_script = "";			
+    menu_actions_script = "";
+	
+    ha_entities = `sensor:
+  - platform: template
+    sensors:\n`;
+
+    esph_sensors = "";
+    esph_bin_sensors = "";
+	
+	menu_depth = 1;
+	menu_size = 1;
+	
+	esph_config = "";
+	ha_config = "";
+
+  	menu_size += calcChildren(e);
+	
+	createMenu(e);
+	
+	menu_length[0] = 1 + Number(e.parentElement.parentElement.parentElement.getElementsByClassName("direct-children")[0].value);
+	
+	createConfig();
+	
+	document.getElementById("pithy-config").innerHTML = esph_config;
+	document.getElementById("ha-config").innerHTML = ha_entities;
+  }
+
+  function createMenu(e) {
+    var items = e.children;
+	var length = items.length;
+	var nextchild = 0;
+	
+	var has_submenu = false;
+	
+	for(var i=0; i<length; i++){
+
+	  menu_labels[menu_i + i] = "\"" + items[i].getElementsByClassName("label")[0].value + "\"";
+	  var f = menu_functions[menu_i + i] = items[i].getElementsByTagName("select")[0].value;
+	  
+      menu_child[menu_i + i] = 0;
+	  menu_length[menu_i + i] = 0;
+	  
+	  switch(f) {
+	    case "1":
+		  var lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("menu-values")[0].value.split("\n");
+		  for (t of lines) menu_values_script += "            case " + Number(menu_i + i) + ": " + t + "\n";
+		  menu_values_script += "\n";
+
+		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("templ-ent")[0].value.split("\n");
+		  for (t of lines) ha_entities += "      " + t + "\n";
+
+          esph_sensors += "  - platform: homeassistant\n"
+		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("esph-ent")[0].value.split("\n");
+		  for (t of lines) esph_sensors += "    " + t + "\n";
+		  esph_sensors += "\n"
+          
+		  break;
+		  
+	    case "2":
+		  menu_child[menu_i + i] = menu_i + length + nextchild;
+		  menu_length[menu_i + i] = Number(items[i].getElementsByClassName("direct-children")[0].value);
+		  nextchild += Number(items[i].getElementsByClassName("all-children")[0].value);
+		  
+		  has_submenu = true;
+		  
+		  break;
+        
+	    case "3":
+		  var from = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("from")[0].value;
+          var to = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("to")[0].value;
+	      var step = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("step")[0].value;
+
+		  menu_length[menu_i + i] = Math.round((to - from)/step);
+
+		  var lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("menu-values")[0].value.split("\n");
+		  for (t of lines) menu_values_script += "            case " + Number(menu_i + i) + ": " + t + "\n";
+		  menu_values_script += "\n";
+
+          lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("set-rotary")[0].value.split("\n");
+		  for (t of lines) menu_rotary_script += "            case " + Number(menu_i + i) + ": " + t + "\n";
+		  menu_rotary_script += "\n";
+		  
+          menu_actions_script +=`      - if:
+          condition:
+            lambda: 'return id(menu_current_node) == ` + Number(menu_i + i) + `;'
+          then:\n`;
+		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("service-data")[0].value.split("\n");
+		  for (t of lines) menu_actions_script += "            " + t + "\n";
+		  menu_actions_script += "\n";
+		  
+		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("templ-ent")[0].value.split("\n");
+		  for (t of lines) ha_entities += "      " + t + "\n";
+
+          esph_sensors += "  - platform: homeassistant\n"
+		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("esph-ent")[0].value.split("\n");
+		  for (t of lines) esph_sensors += "    " + t + "\n";
+		  esph_sensors += "\n"
+          
+		  break;
+
+	    case "4":
+		  var lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("menu-values")[0].value.split("\n");
+		  for (t of lines) menu_values_script += "            case " + Number(menu_i + i) + ": " + t + "\n";
+		  menu_values_script += "\n";
+
+          lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("set-rotary")[0].value.split("\n");
+		  for (t of lines) menu_rotary_script += "            case " + Number(menu_i + i) + ": " + t + "\n";
+		  menu_rotary_script += "\n";
+		  
+          menu_actions_script +=`      - if:
+          condition:
+            lambda: 'return id(menu_current_node) == ` + Number(menu_i + i) + `;'
+          then:
+            if:
+              condition:
+                lambda: 'return id(rotary_dial).state;'
+              then:\n`;
+		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("service-data-on")[0].value.split("\n");
+		  for (t of lines) menu_actions_script += "                " + t + "\n";
+		  menu_actions_script += "              else:\n";
+		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("service-data-off")[0].value.split("\n");
+		  for (t of lines) menu_actions_script += "                " + t + "\n";
+		  menu_actions_script += "\n";
+		  
+		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("templ-ent")[0].value.split("\n");
+		  for (t of lines) ha_entities += "      " + t + "\n";
+
+          esph_bin_sensors += "  - platform: homeassistant\n"
+		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("esph-ent")[0].value.split("\n");
+		  for (t of lines) esph_bin_sensors += "    " + t + "\n";
+		  esph_bin_sensors += "\n"
+          
+		  break;
+
+	    case "5":
+          menu_actions_script +=`      - if:
+          condition:
+            lambda: 'return id(menu_current_node) == ` + Number(menu_i + i) + `;'
+          then:\n`;
+		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("service-data")[0].value.split("\n");
+		  for (t of lines) menu_actions_script += "            " + t + "\n";
+		  menu_actions_script += "\n";
+		  
+          break;
+		  
+	    case "6":
+		  var from = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("from")[0].value;
+          var to = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("to")[0].value;
+	      var step = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("step")[0].value;
+
+		  menu_length[menu_i + i] = Math.round((to - from)/step);
+
+		  var lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("menu-values")[0].value.split("\n");
+		  for (t of lines) menu_values_script += "            case " + Number(menu_i + i) + ": " + t + "\n";
+		  menu_values_script += "\n";
+
+          lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("set-rotary")[0].value.split("\n");
+		  for (t of lines) menu_rotary_script += "            case " + Number(menu_i + i) + ": " + t + "\n";
+		  menu_rotary_script += "\n";
+		  
+          menu_actions_script +=`      - if:
+          condition:
+            lambda: 'return id(menu_current_node) == ` + Number(menu_i + i) + `;'
+          then:\n`;
+		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("service-data")[0].value.split("\n");
+		  for (t of lines) menu_actions_script += "            " + t + "\n";
+		  menu_actions_script += "\n";
+		  
+		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("templ-ent")[0].value.split("\n");
+		  for (t of lines) ha_entities += "      " + t + "\n";
+
+          esph_sensors += "  - platform: homeassistant\n"
+		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("esph-ent")[0].value.split("\n");
+		  for (t of lines) esph_sensors += "    " + t + "\n";
+		  esph_sensors += "\n"
+          
+		  break;
+
+	  }
+
+	}
+
+    if(has_submenu) menu_depth++;
+	
+	menu_i += length;
+
+	for(var i=0; i<length; i++){
+	  var f = items[i].getElementsByTagName("select")[0].value;
+
+	  if (f == 2){
+        var e_next = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("item-base")[0].getElementsByClassName("item-container")[0];
+		createMenu(e_next);
+	  }
+
+	}
+	
+  }
+  
+  function createConfig() {
+  
+    esph_config = `### Pithy Screen Menu System for controlling Home Assistant
+###
+### Created by: Milan Korenica
+### Licensed under GNU General Public License v3.0
+
+esphome:
+  name: \${unitName}
+  platform: \${boardPlatform}
+  board: \${boardName}
+#set default for rotary
+  on_boot:
+    priority: 250
+    then:
+      - sensor.rotary_encoder.set_value:
+          id: rotary_dial
+          value: 0
+      - binary_sensor.template.publish:
+          id: api_connected
+          state: OFF
+      - wait_until:
+          api.connected
+      - sensor.rotary_encoder.set_value:
+          id: rotary_dial
+          value: 0
+      - binary_sensor.template.publish:
+          id: api_connected
+          state: ON
+          
+wifi:
+  ssid: "${document.getElementById("wifi-ssid").value}"
+  password: "${document.getElementById("wifi-pass").value}"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "${document.getElementById("ap-wifi-ssid").value}"
+    password: "${document.getElementById("ap-wifi-pass").value}"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: "${document.getElementById("api-pass").value}"
+
+ota:
+  password: "${document.getElementById("ota-pass").value}"
+
+#####
+#####  CONFIGURATION BLOCK HERE
+#####
+substitutions:
+  boardPlatform: ${document.getElementById("board-platform").value}
+  boardName: ${document.getElementById("board-name").value}
+  unitName: ${document.getElementById("unit-name").value}
+  
+  encoderPinA: D5
+  encoderPinB: D6
+  encoderSwitch: D7
+  i2cData: D1
+  i2cClock: D2
+  
+  # Menu system
+  menuDepth: '${menu_depth}'
+  menuSize: '${menu_size}'
+
+#####  END OF CONFIGURATION BLOCK 
+
+globals:
+# Screensaver
+   - id: ss_x
+     type: signed char
+     initial_value: '0'
+
+   - id: ss_y
+     type: signed char
+     initial_value: '0'
+
+   - id: ss_vx
+     type: signed char
+     initial_value: '1'
+
+   - id: ss_vy
+     type: signed char
+     initial_value: '1'
+     
+   - id: wi
+     type: unsigned char
+     initial_value: '0'
+
+# Menu helpers
+     
+   - id: menu_max_level
+     type: unsigned char
+     initial_value: '\${menuDepth}'
+
+   - id: menu_level
+     type: unsigned char
+
+   - id: menu_position
+     type: unsigned char[\${menuDepth}]
+
+   - id: menu_parent
+     type: unsigned char[\${menuDepth}]
+
+   - id: menu_current_node
+     type: unsigned char
+
+   - id: menu_current_label
+     type: char *
+
+   - id: menu_current_value
+     type: float
+
+   - id: menu_set_mode
+     type: bool
+     initial_value: 'false'
+
+#####
+#####  CONFIGURATION BLOCK HERE
+#####
+
+     # Set these to labels you want to display
+   - id: menu_labels
+     type: char * [\${menuSize}]
+     initial_value: '{${menu_labels}}'
+
+     # Set these to functions of particular menu items
+   - id: menu_functions
+     type: unsigned char[\${menuSize}]
+     initial_value: '{${menu_functions}}'
+
+     # For submenu items, what are the children?
+   - id: menu_child
+     type: unsigned char[\${menuSize}]
+     initial_value: '{${menu_child}}'
+
+     # How many items are there for each submenu? For continuous settings, what is the range?
+   - id: menu_length
+     type: unsigned char[\${menuSize}]
+     initial_value: '{${menu_length}}'
+
+script:
+# What value to display for each menu item
+  - id: menu_values
+    then:
+      - lambda: |-
+          switch(id(menu_current_node)) {
+            
+${menu_values_script}
+          }
+
+# What value to set rotary encoder to for each menu item setting
+  - id: menu_set_rotary
+    then:
+      - lambda: |-
+          switch(id(menu_current_node)) {
+            
+${menu_rotary_script}
+          }
+
+# Actions for each menu item setting
+  - id: menu_actions
+    then:
+
+${menu_actions_script}
+
+#####  END OF CONFIGURATION BLOCK 
+
+interval:
+# Screen saver logic
+  - interval: 0.2s
+    then:
+      - lambda: |-
+          id(ss_x) += id(ss_vx);
+          id(ss_y) += id(ss_vy);
+          if(id(ss_x)>37 || id(ss_x)<1) id(ss_vx) *= -1;
+          if(id(ss_y)>31 || id(ss_y)<-5) id(ss_vy) *= -1;
+          id(wi) = ++id(wi) > 15 ? 0 : id(wi);
+
+i2c:
+  sda: \${i2cData}
+  scl: \${i2cClock}
+  frequency: 200kHz
+  scan: True
+  id: bus_a
+
+time:
+  - platform: homeassistant
+    id: ha_time
+    
+font:
+  - file: "SFCompactText.ttf"
+    id: big_font
+    size: 32
+    glyphs: ":0123456789"
+
+  - file: "SFCompactText.ttf"
+    id: small_font
+    size: 16
+    glyphs: ">-:/&!°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
+
+  - file: "SFCompactText.ttf"
+    id: tiny_font
+    size: 12
+    glyphs: ":0123456789Conectig."
+
+display:
+  - platform: ssd1306_i2c
+    model: "SH1106 128x64"
+    address: 0x3C
+    update_interval: 0.1s
+    id: idisplay
+    lambda: |-
+      if (!id(api_connected).state){
+        // Little animation before API is online
+        it.printf(64, 0, id(tiny_font), TextAlign::TOP_CENTER, "Connecting...");
+        it.filled_circle(64, 40, 20);
+        it.filled_circle(64, 40, 15, COLOR_OFF);
+        unsigned char wii = floor(id(wi)/2);
+        if(wii > 0 && wii < 5) it.filled_rectangle(65, 20, 20, 21, COLOR_OFF);
+        if(wii > 1 && wii < 6) it.filled_rectangle(65, 40, 20, 21, COLOR_OFF);
+        if(wii > 2 && wii < 7) it.filled_rectangle(44, 40, 21, 21, COLOR_OFF);
+        if(wii > 3 && wii < 8) it.filled_rectangle(44, 20, 21, 21, COLOR_OFF);
+      } else {
+    
+      // Screensaver is always node 0
+      if(id(menu_current_node)==0) {
+        it.strftime(id(ss_x), id(ss_y), id(big_font), "%H:%M", id(ha_time).now());
+      }
+      else {
+      
+        // Header time
+        it.strftime(0, 6, id(tiny_font), COLOR_ON, TextAlign::CENTER_LEFT, "%H:%M", id(ha_time).now());
+        // Header wifi
+        for(int i=0; i<5; i++) if(i<id(wifistep).state) it.filled_rectangle(102+i*5,8-i*2,4,i*2+4); else it.rectangle(102+i*5,8-i*2,4,i*2+4);
+        // Header menu level
+        if(id(menu_level)>0){
+        
+          // y-ccord start of the level display
+          int b = 64 - (4 * id(menu_level));
+          for(int i=0; i<id(menu_level); i++) {
+          
+            // Start of this symbol
+            int itb = b + i*8;
+            // Top line
+            it.line(itb, 2, itb+6, 6);
+            // Bottom line
+            it.line(itb+6, 6, itb, 10);
+            
+          };
+        }
+        // Header menu position
+        // y-ccord start of the menu pos display
+        int b = 64 - (2 * id(menu_length)[id(menu_parent)[id(menu_level)]]);
+        for(int i=0; i<id(menu_length)[id(menu_parent)[id(menu_level)]]; i++) {
+          
+          // Start of this symbol
+          int itb = b + i*4;
+          if(id(menu_position)[id(menu_level)] == i) it.filled_rectangle(itb, 61, 3, 3);
+          else it.draw_pixel_at(itb+1, 62);
+            
+        };
+        
+        
+        // Show label
+        bool s = !id(menu_set_mode) &&
+                (id(menu_functions)[id(menu_current_node)] == 2 || 
+                 id(menu_functions)[id(menu_current_node)] == 3 || 
+                 id(menu_functions)[id(menu_current_node)] == 4 || 
+                 id(menu_functions)[id(menu_current_node)] == 6 );
+        it.printf(64, 40, id(small_font), TextAlign::TOP_CENTER, "%s%s", id(menu_labels)[id(menu_current_node)], s ? " >" : "" );
+        
+        // Show value
+        if(id(menu_set_mode)) {
+          
+          switch(id(menu_functions)[id(menu_current_node)]){
+          
+            case 3:
+            case 6:
+              // Value
+              it.printf(127, 20, id(small_font), TextAlign::TOP_RIGHT, "%.2f", id(menu_current_value));
+              // Setting progressbar, outline rectangle
+              it.rectangle(0, 25, 64, 12);
+              // Inner fill
+              it.filled_rectangle(2, 27, round(id(rotary_dial).state*0.60), 8);
+              break;
+            case 4:
+              // Labels
+              it.printf(10, 20, id(small_font), TextAlign::TOP_LEFT, "OFF");
+              it.printf(122, 20, id(small_font), TextAlign::TOP_RIGHT, "ON");
+              // Switch, outline rectangle
+              it.rectangle(52, 25, 24, 12);
+              // Inner toggle
+              it.filled_rectangle(54 + id(rotary_dial).state*10, 27, 10, 8);
+
+          }
+
+        } else {
+        
+          // Show value only if Display or Setting
+          switch(id(menu_functions)[id(menu_current_node)]){
+          
+            case 1:
+            case 3:
+            case 6:
+              it.printf(64, 20, id(small_font), TextAlign::TOP_CENTER, "%.2f", id(menu_current_value));
+              break;
+            case 4:
+              it.printf(64, 20, id(small_font), TextAlign::TOP_CENTER, "%s", id(menu_current_value) == 0 ? "OFF" : "ON");
+              break;
+            case 5: // show button
+              it.rectangle(52, 24, 24, 14);
+              if(id(rotary_dial_push).state == 0){
+                // horizontal shades
+                it.line(53, 25, 73, 25);
+                it.line(54, 36, 72, 36);
+                // vertical shades
+                it.line(53, 25, 53, 35);
+                it.line(74, 26, 74, 34);
+                // edge
+                //it.draw_pixel_at(74, 36);
+
+              }
+              break;
+              
+          }
+        }
+      }
+      
+      }
+          
+sensor:
+  - platform: rotary_encoder
+    id: rotary_dial
+    pin_a:
+      number: \${encoderPinA}
+      inverted: true
+      mode: INPUT_PULLUP
+    pin_b:
+      number: \${encoderPinB}
+      inverted: true
+      mode: INPUT_PULLUP
+    filters:
+      - lambda: |-
+          unsigned char a;
+          if(id(menu_set_mode)) { //if set mode, rotary should go from 0 to according setting
+
+            switch(id(menu_functions)[id(menu_current_node)]){
+              case 3: 
+              case 6:
+                a = id(menu_length)[id(menu_current_node)]; break; // continuous
+              case 4: a = 2; break;  // binary
+            }
+
+          } else { //if not, it should go to level length
+
+            //get current menu length
+            a = id(menu_length)[id(menu_parent)[id(menu_level)]];
+
+          }
+
+          //if rotary is over length, set to length
+          if(x >= a) {
+
+            id(rotary_dial).set_value(a-1);
+            return a-1;
+
+          }
+          else return x;
+    resolution: 1
+    min_value: 0
+    max_value: 100
+    on_value:
+      then:
+        - if:
+            condition:
+              api.connected
+            then:
+              - if:
+                  condition:
+                    # Are we setting or browsing?
+                    lambda: 'return id(menu_set_mode);'
+                  then:
+                   # Change setting only if not in continuous + confirm
+                    - if:
+                        condition:
+                          lambda: 'return !(id(menu_functions)[id(menu_current_node)] == 6);'
+                        then:
+                          - script.execute: menu_actions
+                  else:
+                    # Browsing mode, set menu position
+                    - lambda: |-
+                        //set current node to start of current child + rotary position
+                        id(menu_current_node) = id(menu_child)[id(menu_parent)[id(menu_level)]] + x;
+                        //set current level position
+                        id(menu_position)[id(menu_level)] = x;
+                # Update value
+              - script.execute: menu_values
+
+  - platform: wifi_signal
+    id: wifisignal
+    update_interval: 20s
+    
+  - platform: template
+    id: wifistep
+    update_interval: 20s
+    lambda: |-
+      if(isnan(id(wifisignal).state)) return 0;
+      else return round((id(wifisignal).state+100)/10);
+
+#####
+#####  CONFIGURATION BLOCK HERE
+#####
+
+# Sensors from Home Assistant
+${esph_sensors}
+#####  END OF CONFIGURATION BLOCK 
+
+binary_sensor:
+  - platform: gpio
+    id: rotary_dial_push
+    pin:
+      number: \${encoderSwitch}
+      inverted: true
+      mode: INPUT_PULLUP
+    on_press:
+      then:
+        - if:
+            condition:
+              api.connected
+            then:
+              - if:
+                  condition:
+                    # Execute continuous setting with confirmation when returning from set mode
+                    lambda: 'return id(menu_functions)[id(menu_current_node)] == 6 && id(menu_set_mode) == true;'
+                  then:
+                     - script.execute: menu_actions
+
+              - if:
+                  condition:
+                    # Set mode for continuous or binary setting
+                    lambda: 'return (id(menu_functions)[id(menu_current_node)] == 3 || id(menu_functions)[id(menu_current_node)] == 4  || id(menu_functions)[id(menu_current_node)] == 6);'
+                  then:
+                    - lambda: |-
+                        //toggle set mode
+                        if(id(menu_set_mode)) {
+                        
+                          id(menu_set_mode) = false;
+                          // restore rotary value to position
+                          id(rotary_dial).set_value(id(menu_position)[id(menu_level)]);
+      
+                        } else id(menu_set_mode) = true;
+      
+              - if:
+                  condition:
+                    # Button action
+                    lambda: 'return id(menu_functions)[id(menu_current_node)] == 5;'
+                  then:
+                     - script.execute: menu_actions
+      
+              # If set mode, set rotary
+              - if:
+                  condition:
+                    lambda: 'return id(menu_set_mode);'
+                  then:
+                    - script.execute: menu_set_rotary
+
+              - if:
+                  condition:
+                    # Go to submenu. This needs to be last to prevent setting new item and also executing it
+                    lambda: 'return id(menu_functions)[id(menu_current_node)] == 2;'
+                  then:
+                    - lambda: |-
+                        //raise level up to max level
+                        id(menu_level) = ++id(menu_level) > id(menu_max_level) ? id(menu_max_level) : id(menu_level);
+                        //set parent node for new level
+                        id(menu_parent)[id(menu_level)] = id(menu_current_node);
+                        //set new current node
+                        id(menu_current_node) = id(menu_child)[id(menu_parent)[id(menu_level)]];
+                        //reset rotary to 0
+                        id(rotary_dial).set_value(0);
+                        //reset position in current level to 0
+                        id(menu_position)[id(menu_level)] = 0;
+
+              # Display entities value for each menu item
+              - script.execute: menu_values
+
+
+  - platform: gpio
+    id: secret_switch
+    pin:
+      number: TX
+      inverted: true
+      mode: INPUT_PULLUP
+    on_press:
+      then:
+        lambda: |-
+          if(id(menu_set_mode)) {
+          
+            id(menu_set_mode) = false;
+            id(rotary_dial).set_value(id(menu_position)[id(menu_level)]);
+          }
+          else {
+          
+          if(id(menu_level) > 0) { //if we have anywhere to return
+          
+            //set new current node to current parent
+            id(menu_current_node) = id(menu_parent)[id(menu_level)];
+            //return to previous level
+            --id(menu_level);
+            //reset rotary to position for current level
+            id(rotary_dial).set_value(id(menu_position)[id(menu_level)]);
+          } else {
+          
+          if(id(menu_level) == 0) { //if we are at level 0, jump to saver
+          
+            //set new current node to 0
+            id(menu_current_node) = 0;
+            //reset rotary to 0
+            id(rotary_dial).set_value(0);
+            //reset menu position for current level to 0
+            id(menu_position)[id(menu_level)] = 0;
+          } } }
+
+  - platform: template
+    id: api_connected
+
+#####
+#####  CONFIGURATION BLOCK HERE
+#####
+
+  # Binary sensors from HomeAssistant
+${esph_bin_sensors}
+#####  END OF CONFIGURATION BLOCK`
+  
+  }
+
+  addItem(document.getElementsByClassName('add-button')[0]);
+  
+</script>
+</body>
