@@ -32,7 +32,7 @@ __If you need help with the meaning of each setting__ hover your mouse over each
 
 Once you're happy with your menu click __Create config__. Two text fields will be populated, one with ESPHome YAML config and the other with Home Assistant template sensor config.
 
-You can download the YAML file with the __Download config file__ button. Compile and upload the YAML file using ESPHome and your preferred method.
+You can download the YAML file with the __Download config file__ button. Compile and upload the YAML file using ESPHome and your preferred method. Don't forget to put the __font files__ from the repo in your ESPHome config folder (where the yaml file is) otherwise you'll get compilation errors.
 
 If any __template sensors for HA__ have been generated, paste that config into the respective config file in Home Assistant. This will be dependent on the structure of your yaml files and sensor configuration. The default is configuration.yaml and ``sensor:`` section like this:
 
@@ -43,8 +43,6 @@ If any __template sensors for HA__ have been generated, paste that config into t
           pithy_....
             value_template: ...
             ...
-
-Don't forget to put the __font file__ from the repo in your ESPHome config folder on the Home Assistant machine (where the yaml files are). Otherwise you'll get compilation errors.
 
 ### Manual configuration
 
