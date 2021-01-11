@@ -1,7 +1,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Pithy Screen Menu Generator</title>
+  <title>Pithy Counter Menu Generator</title>
   <script src="html5sortable.min.js"></script>
   <style>
     body {
@@ -16,6 +16,17 @@
 	h2 {
 	 font-size: 1.5em;
 	 margin: 5px;
+	}
+	
+	.blue {
+	  color: #005000;
+	  font-weight: bold;
+	}
+	
+	.blueborder {
+	 margin: 2px;
+	 border: solid 1px #005000;
+	 padding: 5px;
 	}
 	
 	.frame {
@@ -101,6 +112,8 @@
       visibility: hidden;
       background-color: #FFFFE0;
 	  border: 2px solid black;
+	  color: #000000;
+	  font-weight: normal;
 	  width: 300px;
       text-align: center;
       padding: 5px;
@@ -173,18 +186,27 @@
 	}
 	
 	.sortable-placeholder {
-	  border: 1px solid;
+	  border: 3px solid;
+	  margin: 2px, 0, 2px, 0;
     }	  
   </style>
 
 
 </head>
 <body onload="">
-<h1>Pithy Screen Menu Configurator</h1>
+<h1>Menu Configurator for Pithy with screen</h1>
 <div class="frame">
 <h2>Basic</h2>
+<label>Device type:<span class="tooltip-bottom">What kind of device do you have</span></label>
+<select onchange="changeDevice(this)">
+<option>-- Please choose one --</option>
+<option>Screen</option>
+<option>Counter</option>
+</select>
 <label>Unit name:<span class="tooltip-bottom">Name for this particular device, e.g. pithy_screen_bedroom. Must be lower case, no spaces, no symbols apart from udnerscores.</span></label>
-<input type="text" id="unit-name" value="pithy_screen_"><br />
+<input type="text" id="unit-name" value="pithy_" oninput="updateFriendlyName(this)"><br />
+<label>Friendly name:<span class="tooltip-bottom">Any name you like. Will be used to name internal sensors (temperature, humidity, PIR) if installed.</span></label>
+<input type="text" id="friendly-name" value="Pithy"><br />
 <label>Board platform:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
 <select id="board-platform">
 <option selected>ESP8266</option>
@@ -208,12 +230,92 @@
 <label>API password:<span class="tooltip-bottom">For connecting to Home Assistant</span></label> <input type="text" id="api-pass" value="pithy"><br />
 <label>OTA password:<span class="tooltip-bottom">For over-the-air updates (flashing)</span></label> <input type="text" id="ota-pass" value="pithy"><br />
 </div>
+<div class="frame">
+<h2>Hardware</h2>
+<label>PIR pin:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
+<select id="pir-pin">
+<option>None</option>
+<option>D0</option>
+</select><br />
+<label>Button pin:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
+<select id="but-pin">
+<option>D1</option>
+<option>TX</option>
+</select><br />
+<label>I²C data pin:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
+<select id="i2cd-pin">
+<option>D1</option>
+<option>D4</option>
+</select>
+<label>I²C clock pin:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
+<select id="i2cc-pin">
+<option>D2</option>
+<option>D3</option>
+</select><br />
+<label>Encoder pin A:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
+<select id="enca-pin">
+<option>D5</option>
+</select>
+<label>Encoder pin B:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
+<select id="encb-pin">
+<option>D6</option>
+</select>
+<label>Encoder switch pin:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
+<select id="encs-pin">
+<option>D7</option>
+</select>
+</div>
 <div>
 <input type="hidden" id="direct-children" class="direct-children" value="0"><input type="hidden" id="all-children" class="all-children" value="0">
 <div>
 <div class="item-base" id="base">
   <div class="item-saver"><h2>Menu</h2></div>
-  <div class="item-saver"><h3>Screensaver</h3></div>
+  <div class="item-saver"><h3>Screensaver</h3><br />
+	<div class="blueborder">
+      <label class="blue">Encoder shortcut<span class="tooltip">Define action to perform when you press the encoder on screensaver screen</span></label><br />
+	  <label>Entity to perform action on:<span class="tooltip">Home Assistant entity name. If you want to trigger and automation or a script, put the name here.</span></label><input id="entity" class="entity" type="text" oninput="fillActCode(this.parentElement.getElementsByTagName('select')[0])"><br />
+	  <label>What to do:<span class="tooltip">Choose from predefined actions. If you want to create your own, choose custom and click Advanced settings. If you want to modify one of the predefined, first choose the predefined action, then Custom.</span></label>
+	  <select id="enc-ss-act" onchange="fillActCode(this, true)">
+	  <option>None</option>
+	  <option value="0">Custom service call</option>
+	  <option value="1">Trigger automation</option>
+	  <option value="2">Trigger script</option>
+	  <option value="3">Open cover</option>
+	  <option value="4">Close cover</option>
+	  <option value="5">Media player play/pause</option>
+	  <option value="6">Start vacuum</option>
+	  <option value="7">Return vacuum to base</option>
+	  <option value="8">Pair Zigbee device</option>
+	  <option value="9">Restart HomeAssistant</option>
+	  </select><br />
+	  <h6 onclick="showHide(this.parentElement.getElementsByClassName('adv-set')[0])">Advanced settings</h6>
+	  <div style="display: none" class="adv-set">
+	  <label>Service data:</label><br /><textarea id="enc-ss-data" class="service-data" rows="6"></textarea><br />
+	  </div>
+	</div>
+	<div class="blueborder">
+      <label class="blue">Button shortcut<span class="tooltip">Define action to perform when you press the button on screensaver screen</span></label><br />
+	  <label>Entity to perform action on:<span class="tooltip">Home Assistant entity name. If you want to trigger and automation or a script, put the name here.</span></label><input id="entity" class="entity" type="text" oninput="fillActCode(this.parentElement.getElementsByTagName('select')[0])"><br />
+	  <label>What to do:<span class="tooltip">Choose from predefined actions. If you want to create your own, choose custom and click Advanced settings. If you want to modify one of the predefined, first choose the predefined action, then Custom.</span></label>
+	  <select id="but-ss-act" onchange="fillActCode(this, true)">
+	  <option>None</option>
+	  <option value="0">Custom service call</option>
+	  <option value="1">Trigger automation</option>
+	  <option value="2">Trigger script</option>
+	  <option value="3">Open cover</option>
+	  <option value="4">Close cover</option>
+	  <option value="5">Media player play/pause</option>
+	  <option value="6">Start vacuum</option>
+	  <option value="7">Return vacuum to base</option>
+	  <option value="8">Pair Zigbee device</option>
+	  <option value="9">Restart HomeAssistant</option>
+	  </select><br />
+	  <h6 onclick="showHide(this.parentElement.getElementsByClassName('adv-set')[0])">Advanced settings</h6>
+	  <div style="display: none" class="adv-set">
+	  <label>Service data:</label><br /><textarea id="but-ss-data" class="service-data" rows="6"></textarea><br />
+	  </div>
+	</div>
+  </div>
   <div class="item-container"></div>
   <button onclick="addItem(this)" class="add-button">Add new item</button>
 </div>
@@ -271,6 +373,51 @@ Scroll down for Home Assistant config<br /><br />
       e.style.display = "none";
     }
   }
+
+  function changeDevice(e) {
+    var i = e.value;
+	var e_pir = document.getElementById("pir-pin");
+	var e_but = document.getElementById("but-pin");
+	var e_i2cd = document.getElementById("i2cd-pin");
+	var e_i2cc = document.getElementById("i2cc-pin");
+	var e_unit = document.getElementById("unit-name");
+	
+	switch(i){
+	  case "Screen":
+	    e_pir.selectedIndex = 1;
+		e_but.selectedIndex = 1;
+		e_i2cd.selectedIndex = 0;
+		e_i2cc.selectedIndex = 0;
+		e_unit.value = "pithy_screen_";
+		break;
+	
+	  case "Counter":
+	    e_pir.selectedIndex = 1;
+		e_but.selectedIndex = 0;
+		e_i2cd.selectedIndex = 1;
+		e_i2cc.selectedIndex = 1;
+		e_unit.value = "pithy_counter_";
+		break;
+	}
+	updateFriendlyName(document.getElementById("unit-name"));
+  }
+
+  function ucFirstAllWords( str )
+  {
+      var pieces = str.split(" ");
+      for ( var i = 0; i < pieces.length; i++ )
+      {
+          var j = pieces[i].charAt(0).toUpperCase();
+          pieces[i] = j + pieces[i].substr(1);
+      }
+      return pieces.join(" ");
+  }
+
+  function updateFriendlyName(e) {
+    var s = e.value.replace(/_/g, " ");
+	s = ucFirstAllWords(s);
+	document.getElementById("friendly-name").value = s;
+  }
   
   function fillItemContent(e) {
     var o = e.parentElement.getElementsByClassName("item-content")[0];
@@ -281,6 +428,13 @@ Scroll down for Home Assistant config<br /><br />
 	  case "1": t = `<label>Entity to display:<span class="tooltip">Home Assistant entity name</span></label><input id="entity" class="entity" type="text" oninput="fillDispCode(this)"> <label>Attribute (leave empty if none):<span class="tooltip">Attribute from Home Assistant entity</span></label><input id="attribute" class="attribute" type="text" oninput="fillDispCode(this)"><br />
       <label>Display factor:<span class="tooltip">Number to multiply the HA entity value by. Useful if the range is e.g. 0 - 1 but you want to show it as 0 - 100.</span></label><input id="dfactor" class="dfactor" type="number" oninput="fillDispCode(this)" value="1"><br />
 	  <input type="checkbox" id="is-bin" class="is-bin" oninput="fillDispCode(this)"><label>Binary entity<span class="tooltip">Uncheck if entity has range of values, check if it is only on or off</span></label><br />
+	  <label>Type of entity:<span class="tooltip">Choose if you want Home Assistant entity or one of the internal ones</span></label>
+	  <select onchange="fillDispCode(this, true)">
+	  <option value="0">Home Assistant</option>
+	  <option value="1">Internal temperature</option>
+	  <option value="2">Internal humidity</option>
+	  <option value="3">Internal motion</option>
+	  </select><br />
 	  <h6 onclick="showHide(this.parentElement.getElementsByClassName('adv-set')[0])">Advanced settings</h6>
 	  <div style="display: none" class="adv-set">
 	  <label>Code for menu value display:</label><br /><textarea id="menu-values" class="menu-values" rows="2"></textarea><br />
@@ -394,14 +548,17 @@ Scroll down for Home Assistant config<br /><br />
 	if(i == 2) addItem(e.parentElement.getElementsByClassName("item-base")[0].getElementsByClassName("add-button")[0]);
   }
 
-  function fillDispCode(e) {
-	var entity = e.parentElement.getElementsByClassName("entity")[0].value;
+  function fillDispCode(e, s=false) {
+	var e_entity = e.parentElement.getElementsByClassName("entity")[0];
+	var entity = e_entity.value;
 
     var e_menuval = e.parentElement.getElementsByClassName("menu-values")[0];
 
     var e_esphe = e.parentElement.getElementsByClassName("esph-ent")[0];
 
     var e_hae = e.parentElement.getElementsByClassName("templ-ent")[0];
+	
+	var ent_type = e.parentElement.getElementsByTagName("select")[0].value;
 
 	var e_attribute = e.parentElement.getElementsByClassName("attribute")[0];
 	var attribute = e_attribute.value;
@@ -419,16 +576,26 @@ Scroll down for Home Assistant config<br /><br />
 	var t_ha_name = "";
 	var t_esph_name = "";
 	
-	t_esph_name = entity.replace(/\./g, "_") + (t_attrib == "" ? "" : "_" + t_attrib);
+    switch(ent_type){
+	
+	case "0":
+	  if(s) {
+	    entity = "";
+		e_entity.value = "";
+		attribute = "";
+		e_attribute.value = "";
+	  }
+	
+      t_esph_name = entity.replace(/\./g, "_") + (t_attrib == "" ? "" : "_" + t_attrib);
 
-    if(t_attrib == "") t_ha_name = entity;
-	else {
-	  t_ha_name = "sensor.pithy_" + t_esph_name;
-	  t_hae = `pithy_${t_esph_name}:
+      if(t_attrib == "") t_ha_name = entity;
+	  else {
+	    t_ha_name = "sensor.pithy_" + t_esph_name;
+	    t_hae = `pithy_${t_esph_name}:
   value_template: "{{ state_attr('${entity}', '${t_attrib}') }}"`;
-	}
+	  }
 
-	t_esphe = `name: "HA sensor ${t_ha_name}"
+	  t_esphe = `name: "HA sensor ${t_ha_name}"
 entity_id: ${t_ha_name}
 id: ${t_esph_name}
 internal: true
@@ -443,10 +610,32 @@ on_value:
           - script.execute: menu_set_rotary
     # End of menu values logic`;
 
-	if(isbin)
-	  t_menuval = "id(menu_current_value) = id(" + t_esph_name + ").state ? 1 : 0; break;" ;
-	else
-	  t_menuval = "id(menu_current_value) = id(" + t_esph_name + ").state" + (dfact == 1 ? "" : " * " + dfact) + "; break;";
+	  if(isbin)
+	    t_menuval = "id(menu_current_value) = id(" + t_esph_name + ").state ? 1 : 0; break;" ;
+	  else
+	    t_menuval = "id(menu_current_value) = id(" + t_esph_name + ").state" + (dfact == 1 ? "" : " * " + dfact) + "; break;";
+		
+	  break;
+	  
+	case "1":
+	  t_menuval = "id(menu_current_value) = id(\${unitName}_temperature).state; break;";
+	  e_entity.value = "\${unitName}_temperature";
+	  e_attribute.value = "";
+	  break;
+	
+	case "2":
+	  t_menuval = "id(menu_current_value) = id(\${unitName}_humidity).state; break;";
+	  e_entity.value = "\${unitName}_temperature";
+	  e_attribute.value = "";
+	  break;
+	
+	case "3":
+	  t_menuval = "id(menu_current_value) = id(\${unitName}_motion).state ? 1 : 0; break;";
+	  e_entity.value = "\${unitName}_temperature";
+	  e_attribute.value = "";
+	  break;
+	  
+	}
 	
 	e_esphe.value = t_esphe;
 	
@@ -802,6 +991,8 @@ on_state:
 	
 	switch(i) {
 	
+      case "None": e_serv.value = ""; return;
+
 	  case "0": return;	break;
 	
 	  case "1":  
@@ -848,7 +1039,7 @@ on_state:
 	  tss = "homeassistant.restart";
 	  tsd = "";
 	  break;
-	
+	  
     }
 
     t_serv = `homeassistant.service:
@@ -962,6 +1153,10 @@ on_state:
 	
 	createConfig();
 	
+	if(ha_entities == `sensor:
+  - platform: template
+    sensors:\n`) ha_entities = "";
+	
 	document.getElementById("pithy-config").innerHTML = esph_config;
 	document.getElementById("ha-config").innerHTML = ha_entities;
   }
@@ -987,13 +1182,17 @@ on_state:
 		  for (t of lines) menu_values_script += "            case " + Number(menu_i + i) + ": " + t + "\n";
 		  menu_values_script += "\n";
 
-		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("templ-ent")[0].value.split("\n");
-		  for (t of lines) ha_entities += "      " + t + "\n";
+          if (items[i].getElementsByClassName("item-content")[0].getElementsByTagName("select")[0].value == "0") {
+    	    lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("templ-ent")[0].value.split("\n");
+		    for (t of lines) ha_entities += "      " + t + "\n";
 
-          esph_sensors += "  - platform: homeassistant\n"
-		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("esph-ent")[0].value.split("\n");
-		  for (t of lines) esph_sensors += "    " + t + "\n";
-		  esph_sensors += "\n"
+            esph_sensors += "  - platform: homeassistant\n"
+		    lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("esph-ent")[0].value.split("\n");
+		    for (t of lines) esph_sensors += "    " + t + "\n";
+		    esph_sensors += "\n";
+		  }
+		  
+		  if( items[i].getElementsByClassName("item-content")[0].getElementsByClassName("is-bin")[0].checked ) menu_functions[menu_i + i] = 7;
           
 		  break;
 		  
@@ -1035,7 +1234,7 @@ on_state:
           esph_sensors += "  - platform: homeassistant\n"
 		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("esph-ent")[0].value.split("\n");
 		  for (t of lines) esph_sensors += "    " + t + "\n";
-		  esph_sensors += "\n"
+		  esph_sensors += "\n";
           
 		  break;
 
@@ -1069,7 +1268,7 @@ on_state:
           esph_bin_sensors += "  - platform: homeassistant\n"
 		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("esph-ent")[0].value.split("\n");
 		  for (t of lines) esph_bin_sensors += "    " + t + "\n";
-		  esph_bin_sensors += "\n"
+		  esph_bin_sensors += "\n";
           
 		  break;
 
@@ -1113,7 +1312,7 @@ on_state:
           esph_sensors += "  - platform: homeassistant\n"
 		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("esph-ent")[0].value.split("\n");
 		  for (t of lines) esph_sensors += "    " + t + "\n";
-		  esph_sensors += "\n"
+		  esph_sensors += "\n";
           
 		  break;
 
@@ -1138,6 +1337,20 @@ on_state:
   }
   
   function createConfig() {
+
+  var dial_ss_script = "";
+  var button_1_ss_script = "";
+  
+  if(document.getElementById("enc-ss-act") != "None") {
+    var lines = document.getElementById("enc-ss-data").value.split("\n");
+    for (t of lines) dial_ss_script += "      " + t + "\n";
+  }
+
+  if(document.getElementById("but-ss-act") != "None") {
+    var lines = document.getElementById("but-ss-data").value.split("\n");
+    for (t of lines) button_1_ss_script += "      " + t + "\n";
+  }
+
   
     esph_config = `### Pithy Screen Menu System for controlling Home Assistant
 ###
@@ -1195,12 +1408,15 @@ substitutions:
   boardPlatform: ${document.getElementById("board-platform").value}
   boardName: ${document.getElementById("board-name").value}
   unitName: ${document.getElementById("unit-name").value}
+  friendlyName: ${document.getElementById("friendly-name").value}
   
-  encoderPinA: D5
-  encoderPinB: D6
-  encoderSwitch: D7
-  i2cData: D1
-  i2cClock: D2
+  encoderPinA: ${document.getElementById("enca-pin").value}
+  encoderPinB: ${document.getElementById("encb-pin").value}
+  encoderSwitch: ${document.getElementById("encs-pin").value}
+  i2cData: ${document.getElementById("i2cd-pin").value}
+  i2cClock: ${document.getElementById("i2cc-pin").value}
+  ${document.getElementById("pir-pin").value == "None" ? "" : "pir: "+document.getElementById("pir-pin").value}
+  button: ${document.getElementById("but-pin").value}
   
   # Menu system
   menuDepth: '${menu_depth}'
@@ -1216,7 +1432,7 @@ globals:
 
    - id: ss_y
      type: signed char
-     initial_value: '0'
+     initial_value: '8'
 
    - id: ss_vx
      type: signed char
@@ -1229,6 +1445,11 @@ globals:
    - id: wi
      type: unsigned char
      initial_value: '0'
+     
+# Blank screen
+   - id: s_blank
+     type: bool
+     initial_value: 'false'
 
 # Menu helpers
      
@@ -1288,7 +1509,6 @@ script:
     then:
       - lambda: |-
           switch(id(menu_current_node)) {
-            
 ${menu_values_script}
           }
 
@@ -1297,28 +1517,60 @@ ${menu_values_script}
     then:
       - lambda: |-
           switch(id(menu_current_node)) {
-            
 ${menu_rotary_script}
           }
 
 # Actions for each menu item setting
   - id: menu_actions
     then:
-
 ${menu_actions_script}
+
+# Action when dial is pressed on screensaver screen
+  - id: dial_ss_press
+    then:
+${dial_ss_script}
+        
+# Action when button is pressed on screensaver screen
+  - id: button_1_ss_press
+    then:
+${button_1_ss_script}
 
 #####  END OF CONFIGURATION BLOCK 
 
+  - id: ss_timeout
+    mode: restart
+    then:
+      - delay: 1min
+      - lambda: >-
+          id(menu_level) = 0;
+          id(menu_position)[0] = 0;
+          id(menu_parent)[0] = 0;
+          id(menu_current_node) = 0;
+          id(menu_set_mode) = false;
+          id(rotary_dial).set_value(0);	
+
+${document.getElementById("pir-pin").value == "None" ? "" : `  - id: s_blankout
+    mode: restart
+    then:
+      - if:
+          condition:
+            binary_sensor.is_on: \${unitName}_motion
+          then:
+            lambda: 'id(s_blank) = false;'
+          else:
+            - delay: 10s
+            - lambda: 'id(s_blank) = true;'
+`}
 interval:
-# Screen saver logic
+# Screen saver logic & wait indicator
   - interval: 0.2s
     then:
       - lambda: |-
           id(ss_x) += id(ss_vx);
           id(ss_y) += id(ss_vy);
-          if(id(ss_x)>37 || id(ss_x)<1) id(ss_vx) *= -1;
-          if(id(ss_y)>31 || id(ss_y)<-5) id(ss_vy) *= -1;
-          id(wi) = ++id(wi) > 15 ? 0 : id(wi);
+          if(id(ss_x)>45 || id(ss_x)<1) id(ss_vx) *= -1;
+          if(id(ss_y)>29 || id(ss_y)<6) id(ss_vy) *= -1;
+          id(wi) = ++id(wi) > 15 ? 0 : id(wi); // wait indicator logic
 
 i2c:
   sda: \${i2cData}
@@ -1332,17 +1584,17 @@ time:
     id: ha_time
     
 font:
-  - file: "SFCompactText.ttf"
+  - file: "OpenSans-Regular.ttf"
     id: big_font
-    size: 32
+    size: 31
     glyphs: ":0123456789"
 
-  - file: "SFCompactText.ttf"
+  - file: "OpenSans-Light.ttf"
     id: small_font
-    size: 16
+    size: 19
     glyphs: ">-:/&!°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ."
 
-  - file: "SFCompactText.ttf"
+  - file: "OpenSans-Light.ttf"
     id: tiny_font
     size: 12
     glyphs: ":0123456789Conectig."
@@ -1354,6 +1606,9 @@ display:
     update_interval: 0.1s
     id: idisplay
     lambda: |-
+      // Blank screen if PIR off
+      if (id(s_blank)) { it.fill(COLOR_OFF); return; }
+      
       if (!id(api_connected).state){
         // Little animation before API is online
         it.printf(64, 0, id(tiny_font), TextAlign::TOP_CENTER, "Connecting...");
@@ -1368,6 +1623,8 @@ display:
     
       // Screensaver is always node 0
       if(id(menu_current_node)==0) {
+
+        // Bouncy time
         it.strftime(id(ss_x), id(ss_y), id(big_font), "%H:%M", id(ha_time).now());
       }
       else {
@@ -1392,8 +1649,8 @@ display:
             
           };
         }
-        // Header menu position
-        // y-ccord start of the menu pos display
+        // Footer menu position
+        // y-coord start of the menu pos display
         int b = 64 - (2 * id(menu_length)[id(menu_parent)[id(menu_level)]]);
         for(int i=0; i<id(menu_length)[id(menu_parent)[id(menu_level)]]; i++) {
           
@@ -1411,7 +1668,7 @@ display:
                  id(menu_functions)[id(menu_current_node)] == 3 || 
                  id(menu_functions)[id(menu_current_node)] == 4 || 
                  id(menu_functions)[id(menu_current_node)] == 6 );
-        it.printf(64, 40, id(small_font), TextAlign::TOP_CENTER, "%s%s", id(menu_labels)[id(menu_current_node)], s ? " >" : "" );
+        it.printf(64, 33, id(small_font), TextAlign::TOP_CENTER, "%s%s", id(menu_labels)[id(menu_current_node)], s ? " >" : "" );
         
         // Show value
         if(id(menu_set_mode)) {
@@ -1421,20 +1678,20 @@ display:
             case 3:
             case 6:
               // Value
-              it.printf(127, 20, id(small_font), TextAlign::TOP_RIGHT, "%.2f", id(menu_current_value));
+              it.printf(127, 12, id(small_font), TextAlign::TOP_RIGHT, "%.2f", id(menu_current_value));
               // Setting progressbar, outline rectangle
-              it.rectangle(0, 25, 64, 12);
+              it.rectangle(0, 20, 54, 12);
               // Inner fill
-              it.filled_rectangle(2, 27, round(id(rotary_dial).state*0.60), 8);
+              it.filled_rectangle(2, 22, round(id(rotary_dial).state*0.50), 8);
               break;
             case 4:
               // Labels
-              it.printf(10, 20, id(small_font), TextAlign::TOP_LEFT, "OFF");
-              it.printf(122, 20, id(small_font), TextAlign::TOP_RIGHT, "ON");
+              it.printf(42, 12, id(small_font), TextAlign::TOP_RIGHT, "Off");
+              it.printf(86, 12, id(small_font), TextAlign::TOP_LEFT, "On");
               // Switch, outline rectangle
-              it.rectangle(52, 25, 24, 12);
+              it.rectangle(52, 20, 24, 12);
               // Inner toggle
-              it.filled_rectangle(54 + id(rotary_dial).state*10, 27, 10, 8);
+              it.filled_rectangle(54 + id(rotary_dial).state*10, 22, 10, 8);
 
           }
 
@@ -1446,22 +1703,21 @@ display:
             case 1:
             case 3:
             case 6:
-              it.printf(64, 20, id(small_font), TextAlign::TOP_CENTER, "%.2f", id(menu_current_value));
+              it.printf(64, 12, id(small_font), TextAlign::TOP_CENTER, "%.2f", id(menu_current_value));
               break;
             case 4:
-              it.printf(64, 20, id(small_font), TextAlign::TOP_CENTER, "%s", id(menu_current_value) == 0 ? "OFF" : "ON");
+            case 7:	   
+              it.printf(64, 12, id(small_font), TextAlign::TOP_CENTER, "%s", id(menu_current_value) == 0 ? "Off" : "On");
               break;
             case 5: // show button
-              it.rectangle(52, 24, 24, 14);
+              it.rectangle(52, 19, 24, 14);
               if(id(rotary_dial_push).state == 0){
                 // horizontal shades
-                it.line(53, 25, 73, 25);
-                it.line(54, 36, 72, 36);
+                it.line(53, 20, 73, 20);
+                it.line(54, 31, 72, 31);
                 // vertical shades
-                it.line(53, 25, 53, 35);
-                it.line(74, 26, 74, 34);
-                // edge
-                //it.draw_pixel_at(74, 36);
+                it.line(53, 20, 53, 30);
+                it.line(74, 21, 74, 29);
 
               }
               break;
@@ -1491,7 +1747,7 @@ sensor:
             switch(id(menu_functions)[id(menu_current_node)]){
               case 3: 
               case 6:
-                a = id(menu_length)[id(menu_current_node)]; break; // continuous
+                a = id(menu_length)[id(menu_current_node)] + 1; break; // continuous
               case 4: a = 2; break;  // binary
             }
 
@@ -1512,7 +1768,6 @@ sensor:
           else return x;
     resolution: 1
     min_value: 0
-    max_value: 100
     on_value:
       then:
         - if:
@@ -1539,7 +1794,7 @@ sensor:
                         id(menu_position)[id(menu_level)] = x;
                 # Update value
               - script.execute: menu_values
-
+              - script.execute: ss_timeout
   - platform: wifi_signal
     id: wifisignal
     update_interval: 20s
@@ -1550,6 +1805,38 @@ sensor:
     lambda: |-
       if(isnan(id(wifisignal).state)) return 0;
       else return round((id(wifisignal).state+100)/10);
+
+  - platform: sht3xd
+    temperature:
+      name: "\${friendlyName} Temperature"
+      id: \${unitName}_temperature
+      filters:
+        - offset: -4
+      on_value:
+        then:
+          # Logic to correctly update menu values
+          - script.execute: menu_values
+          - if:
+              condition:
+                lambda: 'return id(menu_set_mode);'
+              then:
+                - script.execute: menu_set_rotary
+          # End of menu values logic
+    humidity:
+      name: "\${friendlyName} Humidity"
+      id: \${unitName}_humidity
+      on_value:
+        then:
+          # Logic to correctly update menu values
+          - script.execute: menu_values
+          - if:
+              condition:
+                lambda: 'return id(menu_set_mode);'
+              then:
+                - script.execute: menu_set_rotary
+          # End of menu values logic
+    address: 0x44
+    update_interval: 15s
 
 #####
 #####  CONFIGURATION BLOCK HERE
@@ -1572,6 +1859,13 @@ binary_sensor:
             condition:
               api.connected
             then:
+              # Execute screensaver action
+              - if:
+                  condition: 
+                    lambda: 'return id(menu_current_node) == 0;'
+                  then:
+                    script.execute: dial_ss_press
+
               - if:
                   condition:
                     # Execute continuous setting with confirmation when returning from set mode
@@ -1627,43 +1921,73 @@ binary_sensor:
 
               # Display entities value for each menu item
               - script.execute: menu_values
+              - script.execute: ss_timeout
 
-
+${document.getElementById("pir-pin").value == "None" ? "" : `  - platform: gpio
+    pin: \${pir}
+    id: \${unitName}_motion
+    name: "\${friendlyName} Motion"
+    device_class: motion
+    on_state:
+      then:
+        # Logic to correctly update menu values
+        - script.execute: menu_values
+        - if:
+            condition:
+              lambda: 'return id(menu_set_mode);'
+            then:
+              - script.execute: menu_set_rotary
+        # End of menu values logic
+        
+        # BLank screen if motion not detected
+        - script.execute: s_blankout
+`}
   - platform: gpio
-    id: secret_switch
+    id: button_1
     pin:
-      number: TX
+      number: \${button}
       inverted: true
       mode: INPUT_PULLUP
     on_press:
       then:
-        lambda: |-
-          if(id(menu_set_mode)) {
-          
-            id(menu_set_mode) = false;
-            id(rotary_dial).set_value(id(menu_position)[id(menu_level)]);
-          }
-          else {
-          
-          if(id(menu_level) > 0) { //if we have anywhere to return
-          
-            //set new current node to current parent
-            id(menu_current_node) = id(menu_parent)[id(menu_level)];
-            //return to previous level
-            --id(menu_level);
-            //reset rotary to position for current level
-            id(rotary_dial).set_value(id(menu_position)[id(menu_level)]);
-          } else {
-          
-          if(id(menu_level) == 0) { //if we are at level 0, jump to saver
-          
-            //set new current node to 0
-            id(menu_current_node) = 0;
-            //reset rotary to 0
-            id(rotary_dial).set_value(0);
-            //reset menu position for current level to 0
-            id(menu_position)[id(menu_level)] = 0;
-          } } }
+        # Execute screensaver action
+        - if:
+            condition: 
+              and:
+                - lambda: 'return id(menu_current_node) == 0;'
+                - api.connected
+            then:
+              script.execute: button_1_ss_press
+              
+        - lambda: |-
+            if(id(menu_set_mode)) {
+            
+              id(menu_set_mode) = false;
+              id(rotary_dial).set_value(id(menu_position)[id(menu_level)]);
+            }
+            else {
+            
+            if(id(menu_level) > 0) { //if we have anywhere to return
+            
+              //set new current node to current parent
+              id(menu_current_node) = id(menu_parent)[id(menu_level)];
+              //return to previous level
+              --id(menu_level);
+              //reset rotary to position for current level
+              id(rotary_dial).set_value(id(menu_position)[id(menu_level)]);
+            } else {
+            
+            if(id(menu_level) == 0) { //if we are at level 0, jump to saver
+            
+              //set new current node to 0
+              id(menu_current_node) = 0;
+              //reset rotary to 0
+              id(rotary_dial).set_value(0);
+              //reset menu position for current level to 0
+              id(menu_position)[id(menu_level)] = 0;
+            } } }
+            
+        - script.execute: ss_timeout
 
   - platform: template
     id: api_connected
