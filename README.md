@@ -18,19 +18,23 @@ There are two ways to setup the menu
 
 Config generator is in the [menu_generator](menu_generator) folder. The best way to use it is to clone/download the files to your computer and running from there.
 
-The menu generator doesn't do any sanity checks. You are in charge of filling in all the data correctly. Every field of every item must be filled in, the only exception is the "Attribute" field in case of menu items that won't use it. If you manage to make a mistake you will only find out during compile or operation so be careful. Checks may be added in future versions.
+The menu generator __doesn't do any sanity checks__. You are in charge of filling in all the data correctly. __Every field of every item must be filled in__, the only __exceptions__ are Shortcuts in Screensaver section and the "Attribute" field in case of menu items that won't use it. If you manage to make a mistake you will only find out during compile or operation so be careful. Checks may be added in future versions.
 
-To set up the menu structure use the Menu section. You can move the menu items around by dragging them by the large title. You can also drag items out of submenu to another menu level or submenu. __Remember there needs to be at least one item in each submenu!__ Failing that will cause crashes when running on the ESP.
+First __choose your device type__, device name and friendly name. ESPHome and Home Assistant usually use the device name to connect to the device so it __needs to be unique__. Fill in the WiFi credentials. If you assembled the hardware yourself you can set the pins, otherwise leave as is. __If you are using non-Pithy hardware__ such as custom made device and need to change pins to values not present in dropdowns, you can modify them in the generated config under ``globals:`` section.
 
-For each item you can use the preconfigured action on encoder change (the dropdown labeled "What to do on change") or you can type in your own code. The fields will expand when you click "Advanced settings". If you want to use one of the preconfigured actions but you want to modify it, select the desired action in the dropdown and then select "Custom service call".
+__Screensaver shortcuts__ add possibility to trigger defined actions by pressing the dial or the button while on screensaver screen.
 
-If you need help with the meaning of each setting hover your mouse over each label. You'll get a tooltip with some (hopefully) useful information. Also please refer to chapters 2.1 and 2.3 for definiton of menu functions and an explainer on the definiton of range for continuous value sensors.
+__To set up the menu structure__ use the Menu section. You can __move the menu items__ around by dragging them by the large title. You can also __drag items out of submenu__ to another menu level or submenu. __Remember there needs to be at least one item in each submenu!__ Failing that will cause crashes when running on the ESP.
+
+__For each item__ you can use the preconfigured action on encoder change (the dropdown labeled "What to do on change") or you can type in your own code. The fields will expand when you click "Advanced settings". If you want to __modify one of the preconfigured actions__, first select the desired action in the dropdown and then select "Custom service call". After that you can edit the fields under "Advanced settings".
+
+__If you need help with the meaning of each setting__ hover your mouse over each label. You'll get a tooltip with some (hopefully) useful information. Also please refer to chapters 2.1 and 2.3 for definiton of menu functions and an explainer on the definiton of range for continuous value sensors.
 
 Once you're happy with your menu click __Create config__. Two text fields will be populated, one with ESPHome YAML config and the other with Home Assistant template sensor config.
 
 You can download the YAML file with the __Download config file__ button. Compile and upload the YAML file using ESPHome and your preferred method.
 
-If any template sensors for HA have been generated, paste that config into the respective config file in Home Assistant. This will be dependent on the structure of your yaml files and sensor configuration. The default is configuration.yaml and ``sensor:`` section like this:
+If any __template sensors for HA__ have been generated, paste that config into the respective config file in Home Assistant. This will be dependent on the structure of your yaml files and sensor configuration. The default is configuration.yaml and ``sensor:`` section like this:
 
     sensor:
     ... your sensors..
@@ -40,9 +44,11 @@ If any template sensors for HA have been generated, paste that config into the r
             value_template: ...
             ...
 
-_Don't forget to put the font file from the repo in your ESPHome config folder (where the yaml files are)._ Otherwise you'll get compilation errors.
+Don't forget to put the __font file__ from the repo in your ESPHome config folder on the Home Assistant machine (where the yaml files are). Otherwise you'll get compilation errors.
 
 ### Manual configuration
+
+__This section is not up to date. Please use menu generator to generate config.__
 
 Setup of menu structure and functions is done in several places:
 1. Setup of menu structure and data
