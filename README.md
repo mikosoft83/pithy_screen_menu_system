@@ -12,7 +12,7 @@ Rotary encoder is used to browse the menu, push on the rotary is used to either 
 
 There are two ways to setup the menu
 1. Using config generator
-2. Manual
+2. Manual (recommended only if you want to heavily modify the config)
 
 ### Using config generator
 
@@ -20,6 +20,12 @@ Config generator is in the [menu_generator](menu_generator) folder. The best way
 
 The menu generator __doesn't do any sanity checks__. You are in charge of filling in all the data correctly. __Every field of every item must be filled in__, the only __exceptions__ are Shortcuts in Screensaver section and the "Attribute" field in case of menu items that won't use it. If you manage to make a mistake you will only find out during compile or operation so be careful. Checks may be added in future versions.
 
+#### Loading existing config
+If you want to __load a previously generated YAML file__, click the Select config file button. It will read the file and if it finds any Home Assistant entities it will list all of them and ask to paste config from __template entities__ in the indicated format. The value template of these entities is expected to contain only ``state_attr`` function to report an attribute value.
+
+After that click Load config button and the config will be loaded.
+
+#### Creating new config
 First __choose your device type__, device name and friendly name. ESPHome and Home Assistant usually use the device name to connect to the device so it __needs to be unique__. Fill in the WiFi credentials. If you assembled the hardware yourself you can set the pins, otherwise leave as is. __If you are using non-Pithy hardware__ such as custom made device and need to change pins to values not present in dropdowns, you can modify them in the generated config under ``globals:`` section.
 
 __Screensaver shortcuts__ add possibility to trigger defined actions by pressing the dial or the button while on screensaver screen.
@@ -28,7 +34,15 @@ __To set up the menu structure__ use the Menu section. You can __move the menu i
 
 __For each item__ you can use the preconfigured action on encoder change (the dropdown labeled "What to do on change") or you can type in your own code. The fields will expand when you click "Advanced settings". If you want to __modify one of the preconfigured actions__, first select the desired action in the dropdown and then select "Custom service call". After that you can edit the fields under "Advanced settings".
 
-__If you need help with the meaning of each setting__ hover your mouse over each label. You'll get a tooltip with some (hopefully) useful information. Also please refer to chapters 2.1 and 2.3 for definiton of menu functions and an explainer on the definiton of range for continuous value sensors.
+Here are the possible menu item types and what they do:
+* 1: **Display value** - only show a value of a sensor, do nothing
+* 2: **Submenu** - if you press the encoder on this menu item, you will enter the submenu. Pressing the side button returns one level up.
+* 3: **Continuous setting** - set sensor that has a continuous range of values (such as thermostat, volume, blinds position etc.). Pressing the encoder will enter set mode and every turn of encoder will immediately change the value of the sensor. Pressing the encoder or side button will exist the set mode. This is best used with devices that can handle rapid value changes well, e.g. volume settings on a media player, color of a bulb, etc. _Not recommended for example for relay controlled blinds since the relay will be working too hard_.
+* 4: **Toggle** - change value of a binary sensor. Same as above but only has two states, ON or OFF.
+* 5: **Action button** - if you press the encoder on this menu item an action will be called. Can be any homeassistant service, script or automation. It's also possible to pass data (see [ESPHome docs on how to call HA services](https://esphome.io/components/api.html#homeassistant-service-action) )
+* 6: **Continuous setting with confirmation** - same as continuous setting (number 3) but the value won't be changed on every encoder turn. To set the value encoder needs to be pressed again. Pushing the side button will exit set mode without setting the value.
+
+__If you need help with the meaning of each setting__ hover your mouse over each label. You'll get a tooltip with some (hopefully) useful information. 
 
 Once you're happy with your menu click __Create config__. Two text fields will be populated, one with ESPHome YAML config and the other with Home Assistant template sensor config.
 
@@ -46,7 +60,7 @@ If any __template sensors for HA__ have been generated, paste that config into t
 
 ### Manual configuration
 
-__This section is not up to date. Please use menu generator to generate config.__
+__This section is not up to date. The basics of the menu structure are still true but some of the other details may work differently. To setup a config for the first time please use the config generator.__
 
 Setup of menu structure and functions is done in several places:
 1. Setup of menu structure and data
