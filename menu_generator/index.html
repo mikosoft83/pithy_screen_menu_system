@@ -3,9 +3,10 @@
   <meta charset="utf-8">
   <title>Pithy Counter Menu Generator</title>
   <script src="html5sortable.min.js"></script>
+  <script src="js-yaml.min.js"></script>
   <style>
     body {
-	  font-family: sans-serif;
+	  font-family: "Open Sans", sans-serif;
 	}
 	
 	h1 {
@@ -106,6 +107,7 @@
 	  margin: 0px;
 	  margin-bottom: 2px;
 	  padding: 2px;
+	  width: 100%;
 	}
 
     label .tooltip {
@@ -181,10 +183,6 @@
 	  border: 1px solid;
 	}
 	
-	.service-data, .service-data-on, .service-data-off, .menu-values, .set-rotary, .esph-ent, .templ-ent {
-	  width: 40em;
-	}
-	
 	.sortable-placeholder {
 	  border: 3px solid;
 	  margin: 2px, 0, 2px, 0;
@@ -196,12 +194,35 @@
 <body onload="">
 <h1>Menu Configurator for Pithy with screen</h1>
 <div class="frame">
+<h2>Config load</h2>
+<button onclick="document.getElementById('infile').click();" class="create-button">Select config file</button><input type="file" id="infile" oninput="prepareFile(this)"  style="display: none">
+<span id="infile-name"></span><br />
+<div style="display: none" id="infile-adv">
+<br />
+<label><strong>Additional input required</strong></label><br />
+These Home Assistant sensor entities were found in the config:
+<pre id="load-ha-config-label"></pre>
+Please copy all <u>template entities</u> from this list into the box below.<br />
+<strong>Use this format (note there are two spaces before entity names):</strong>
+<pre style="background: #F0F0F0">
+  entity_name:
+    value_template: "{{ }}"
+  another_entity:
+    value_template: "{{ }}"
+  ...</pre>
+<textarea id="load-ha-config" rows="12"></textarea><br/>
+</div>
+<button class="create-button" onclick="readFile()" id="load-file" disabled>Load config</button>
+</div>
+<div class="frame">
 <h2>Basic</h2>
 <label>Device type:<span class="tooltip-bottom">What kind of device do you have</span></label>
-<select onchange="changeDevice(this)">
+<select id="d-type" onchange="changeDevice(this)">
 <option>-- Please choose one --</option>
 <option>Screen</option>
+<option>Screen Plus</option>
 <option>Counter</option>
+<option>Screen Plus Legacy</option>
 </select>
 <label>Unit name:<span class="tooltip-bottom">Name for this particular device, e.g. pithy_screen_bedroom. Must be lower case, no spaces, no symbols apart from udnerscores.</span></label>
 <input type="text" id="unit-name" value="pithy_" oninput="updateFriendlyName(this)"><br />
@@ -233,37 +254,19 @@
 <div class="frame">
 <h2>Hardware</h2>
 <label>PIR pin:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
-<select id="pir-pin">
-<option>None</option>
-<option>D0</option>
-</select><br />
+<input type="text" id="pir-pin"><br />
 <label>Button pin:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
-<select id="but-pin">
-<option>D1</option>
-<option>TX</option>
-</select><br />
+<input type="text" id="but-pin"><br />
 <label>I²C data pin:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
-<select id="i2cd-pin">
-<option>D1</option>
-<option>D4</option>
-</select>
+<input type="text" id="i2cd-pin">
 <label>I²C clock pin:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
-<select id="i2cc-pin">
-<option>D2</option>
-<option>D3</option>
-</select><br />
+<input type="text" id="i2cc-pin"><br />
 <label>Encoder pin A:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
-<select id="enca-pin">
-<option>D5</option>
-</select>
+<input type="text" id="enca-pin" value="D5">
 <label>Encoder pin B:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
-<select id="encb-pin">
-<option>D6</option>
-</select>
+<input type="text" id="encb-pin" value="D6">
 <label>Encoder switch pin:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
-<select id="encs-pin">
-<option>D7</option>
-</select>
+<input type="text" id="encs-pin" value="D7">
 </div>
 <div>
 <input type="hidden" id="direct-children" class="direct-children" value="0"><input type="hidden" id="all-children" class="all-children" value="0">
@@ -273,7 +276,7 @@
   <div class="item-saver"><h3>Screensaver</h3><br />
 	<div class="blueborder">
       <label class="blue">Encoder shortcut<span class="tooltip">Define action to perform when you press the encoder on screensaver screen</span></label><br />
-	  <label>Entity to perform action on:<span class="tooltip">Home Assistant entity name. If you want to trigger and automation or a script, put the name here.</span></label><input id="entity" class="entity" type="text" oninput="fillActCode(this.parentElement.getElementsByTagName('select')[0])"><br />
+	  <label>Entity to perform action on:<span class="tooltip">Home Assistant entity name. If you want to trigger and automation or a script, put the name here.</span></label><input id="enc-ss-entity" class="entity" type="text" oninput="fillActCode(this.parentElement.getElementsByTagName('select')[0])"><br />
 	  <label>What to do:<span class="tooltip">Choose from predefined actions. If you want to create your own, choose custom and click Advanced settings. If you want to modify one of the predefined, first choose the predefined action, then Custom.</span></label>
 	  <select id="enc-ss-act" onchange="fillActCode(this, true)">
 	  <option>None</option>
@@ -295,7 +298,7 @@
 	</div>
 	<div class="blueborder">
       <label class="blue">Button shortcut<span class="tooltip">Define action to perform when you press the button on screensaver screen</span></label><br />
-	  <label>Entity to perform action on:<span class="tooltip">Home Assistant entity name. If you want to trigger and automation or a script, put the name here.</span></label><input id="entity" class="entity" type="text" oninput="fillActCode(this.parentElement.getElementsByTagName('select')[0])"><br />
+	  <label>Entity to perform action on:<span class="tooltip">Home Assistant entity name. If you want to trigger and automation or a script, put the name here.</span></label><input id="but-ss-entity" class="entity" type="text" oninput="fillActCode(this.parentElement.getElementsByTagName('select')[0])"><br />
 	  <label>What to do:<span class="tooltip">Choose from predefined actions. If you want to create your own, choose custom and click Advanced settings. If you want to modify one of the predefined, first choose the predefined action, then Custom.</span></label>
 	  <select id="but-ss-act" onchange="fillActCode(this, true)">
 	  <option>None</option>
@@ -327,9 +330,9 @@
 Scroll down for Home Assistant config<br /><br />
 <div id="config-out">
 <label>Pithy config:</label><br />
-<textarea id="pithy-config" rows="40" style="width:100%"></textarea><br/>
+<textarea id="pithy-config" rows="40"></textarea><br/>
 <label>Home Assistant config:<span class="tooltip-bottom">Put this into your "sensor:" config in HA config file</span></label><br />
-<textarea id="ha-config" rows="40" style="width:100%"></textarea><br/>
+<textarea id="ha-config" rows="40"></textarea><br/>
 </div>
 </div>
 
@@ -383,19 +386,35 @@ Scroll down for Home Assistant config<br /><br />
 	var e_unit = document.getElementById("unit-name");
 	
 	switch(i){
+	  case "Screen Plus Legacy":
+	    e_pir.value = "D0";
+		e_but.value = "TX";
+		e_i2cd.value = "D1";
+		e_i2cc.value = "D2";
+		e_unit.value = "pithy_screen_";
+		break;
+	
 	  case "Screen":
-	    e_pir.selectedIndex = 1;
-		e_but.selectedIndex = 1;
-		e_i2cd.selectedIndex = 0;
-		e_i2cc.selectedIndex = 0;
+	    e_pir.value = "";
+		e_but.value = "TX";
+		e_i2cd.value = "D4";
+		e_i2cc.value = "D3";
+		e_unit.value = "pithy_screen_";
+		break;
+	
+	  case "Screen Plus":
+	    e_pir.value = "D1";
+		e_but.value = "TX";
+		e_i2cd.value = "D4";
+		e_i2cc.value = "D3";
 		e_unit.value = "pithy_screen_";
 		break;
 	
 	  case "Counter":
-	    e_pir.selectedIndex = 1;
-		e_but.selectedIndex = 0;
-		e_i2cd.selectedIndex = 1;
-		e_i2cc.selectedIndex = 1;
+	    e_pir.value = "D0";
+		e_but.value = "D1";
+		e_i2cd.value = "D4";
+		e_i2cc.value = "D3";
 		e_unit.value = "pithy_counter_";
 		break;
 	}
@@ -417,6 +436,580 @@ Scroll down for Home Assistant config<br /><br />
     var s = e.value.replace(/_/g, " ");
 	s = ucFirstAllWords(s);
 	document.getElementById("friendly-name").value = s;
+  }
+
+  var f_menu_values, f_menu_set_rotary;
+
+  var yaml_text, yaml_config, ha_yaml_config;
+
+  function prepareFile(input) {
+    let file = input.files[0];
+
+    let reader = new FileReader();
+
+    reader.readAsText(file);
+	
+    reader.onload = function() {
+	  yaml_text = reader.result;
+      yaml_config = jsyaml.load(yaml_text);
+	  
+	  var se = yaml_config.sensor.filter( function(v) {return v.platform == "homeassistant";} );
+	  var bse = yaml_config.binary_sensor.filter( function(v) {return v.platform == "homeassistant";} );
+	  if(se.length && bse.length) {
+	    var s_list = "";
+		// read sensors and binary sensors
+	    se.forEach( function(v) { if(v.entity_id.startsWith("sensor.")) s_list += v.entity_id + "\n"; } );
+	    bse.forEach( function(v) { if(v.entity_id.startsWith("sensor.")) s_list += v.entity_id + "\n"; } );
+	    document.getElementById("load-ha-config-label").innerText = s_list;
+		// reset textarea for the entities
+		document.getElementById("load-ha-config").value = "";
+		// show the field to put in HA entities
+		document.getElementById("infile-adv").style.display = "block";
+	  }
+   	  
+	  // enable load button
+	  document.getElementById("load-file").disabled = false;
+	  // show filename
+	  document.getElementById("infile-name").innerHTML = file.name;
+	  // reset file input so it can read the same file again
+	  input.value = null;
+	  
+	}
+
+  }
+
+
+  function readFile() {
+	  var ye;
+	  
+      ha_yaml_config = jsyaml.load("sensor:\n" + document.getElementById("load-ha-config").value);
+	  
+	  // document.getElementById("ha-config").innerHTML = JSON.stringify(ha_yaml_config, null, 2);
+	  
+	  document.getElementById("base").getElementsByClassName("item-container")[0].innerHTML = "";
+	  // document.getElementById("pithy-config").innerHTML = JSON.stringify(yaml_config, null, 2);
+
+	  document.getElementById("unit-name").value = yaml_config.substitutions.unitName;
+	  document.getElementById("friendly-name").value = yaml_config.substitutions.friendlyName;
+
+	  document.getElementById("wifi-ssid").value = yaml_config.wifi.ssid;
+	  document.getElementById("wifi-pass").value = yaml_config.wifi.password;
+	  document.getElementById("ap-wifi-ssid").value = yaml_config.wifi.ap.ssid;
+	  document.getElementById("ap-wifi-pass").value = yaml_config.wifi.ap.password;
+
+	  document.getElementById("api-pass").value = yaml_config.api.password;
+	  document.getElementById("ota-pass").value = yaml_config.ota.password;
+
+  	  document.getElementById("pir-pin").value = yaml_config.substitutions.pir;
+	  document.getElementById("but-pin").value = yaml_config.substitutions.button;
+	  document.getElementById("i2cd-pin").value = yaml_config.substitutions.i2cData;
+	  document.getElementById("i2cc-pin").value = yaml_config.substitutions.i2cClock;
+	  
+	  switch(yaml_config.substitutions.pir+yaml_config.substitutions.button+yaml_config.substitutions.i2cData) {
+	    case "D0TXD1": document.getElementById("d-type").value = "Screen Plus Legacy"; break;
+	    case "TXD4": document.getElementById("d-type").value = "Screen"; break;
+	    case "D1TXD4": document.getElementById("d-type").value = "Screen Plus"; break;
+	    case "D0D1D4": document.getElementById("d-type").value = "Counter"; break;
+	  }
+	  
+	  // find dial press in "script" array, return it's "then" action object
+	  ye = yaml_config.script.find( function(v) {return v.id == "dial_ss_press";} ).then;
+	  // convert the object to YAML and put it into data textarea
+	  document.getElementById("enc-ss-data").value = jsyaml.dump(ye);
+	  document.getElementById("enc-ss-entity").value = ye["homeassistant.service"].data.entity_id ? ye["homeassistant.service"].data.entity_id : "";
+	  document.getElementById("enc-ss-act").value = findActValue(ye["homeassistant.service"].service);
+	  if(document.getElementById("enc-ss-act").value == "2") document.getElementById("enc-ss-entity").value = ye["homeassistant.service"].service;
+	  
+	  // same as above for button press
+	  ye = yaml_config.script.find( function(v) {return v.id == "button_1_ss_press";} ).then;
+	  document.getElementById("but-ss-data").value = jsyaml.dump(ye);
+	  document.getElementById("but-ss-entity").value = ye["homeassistant.service"].data.entity_id ? ye["homeassistant.service"].data.entity_id : "";
+	  document.getElementById("but-ss-act").value = findActValue(ye["homeassistant.service"].service);
+	  if(document.getElementById("but-ss-act").value == "2") document.getElementById("but-ss-entity").value = ye["homeassistant.service"].service;
+	  
+	  // find "menu labels" in "globals" array, take it's initial value, remove curly brackets and quotes, split into array of elements and convert to number if applicable
+	  menu_labels = yaml_config.globals.find( function(v) {return v.id == "menu_labels";} ).initial_value.replace(/\{|\}|\"/g,"").split(",");
+	  menu_functions = yaml_config.globals.find( function(v) {return v.id == "menu_functions";} ).initial_value.replace(/\{|\}|\"/g,"").split(",").map(Number);
+      menu_child = yaml_config.globals.find( function(v) {return v.id == "menu_child";} ).initial_value.replace(/\{|\}|\"/g,"").split(",").map(Number);
+      menu_length = yaml_config.globals.find( function(v) {return v.id == "menu_length";} ).initial_value.replace(/\{|\}|\"/g,"").split(",").map(Number);
+
+      // split lambdas by rows
+	  f_menu_values = yaml_config.script.find( function(v) {return v.id == "menu_values";} ).then[0].lambda.split("\n");
+      f_menu_set_rotary = yaml_config.script.find( function(v) {return v.id == "menu_set_rotary";} ).then[0].lambda.split("\n");
+      // document.getElementById("ha-config").innerHTML = f_menu_values + f_menu_set_rotary;
+	  
+	  fillMenuFromArrays(1, menu_length[0]-1, document.getElementById("base").getElementsByClassName("item-container")[0]);
+	
+	  // hide HA entities
+	  document.getElementById("infile-adv").style.display = "none";
+	  // disable load button
+	  document.getElementById("load-file").disabled = true;
+
+    
+  }
+
+  function fillMenuFromArrays(m_start, m_length, m_element){
+    
+    for(var i = m_start; i<=(m_start+m_length-1); i++){
+      
+	  var e = addItemAuto(m_element);
+	  e.getElementsByClassName("label")[0].value = menu_labels[i];
+	  e.getElementsByTagName("select")[0].value = menu_functions[i] == 7 ? 1 : menu_functions[i];
+	  var f = e.getElementsByClassName("item-content")[0];
+	  fillItemContent(e.getElementsByTagName("select")[0]);
+	  
+	  switch(menu_functions[i]){
+	    case 1:
+		  // regexp to find "case i:" block
+		  var r = new RegExp("case\\s*"+i+"\\s*:", "gi");
+		  // find the case block
+		  var l = f_menu_values.find( function(v) { return this.test(v); }, r );
+		  // extract ESPH entity
+		  var ee = l.replace(/.*=.*id\(/i , "").replace(/\).*/i , "");
+		  // set entity type
+		  var he;
+		  switch(ee) {
+		  case "${unitName}_temperature":
+		    he = ee;
+			f.getElementsByTagName("select")[0].value = "1";
+		    break
+		  case "${unitName}_humidity":
+		    he = ee;
+			f.getElementsByTagName("select")[0].value = "2";
+		    break
+		  default:	
+		    // extract HA entity
+		    var esphe = yaml_config.sensor.find( function(v) {return (v.id == ee && v.platform == "homeassistant");} );
+			he = esphe.entity_id;
+            // ESPH entity
+			f.getElementsByClassName("esph-ent")[0].innerHTML = jsyaml.dump(esphe).replace("platform: homeassistant\n","");
+            // HA attribute and real entity
+	  	    var hes = he.replace("sensor.","");
+	        if(ha_yaml_config.sensor && ha_yaml_config.sensor[hes]) {
+			  he = ha_yaml_config.sensor[hes].value_template.match(/state_attr\(['"].*?[.].*?['"]/i)[0].replace(/(state_attr\(|'|")/gi, "");
+			  var hea = ha_yaml_config.sensor[hes].value_template.replace(/state_attr\(['"].*?[.].*?['"]/i, "").match(/['"].*?['"]/i)[0].replace(/('|")/gi, "");
+			  f.getElementsByClassName("attribute")[0].value = hea;
+			// fill template entity
+			  f.getElementsByClassName("templ-ent")[0].value = hes + "\n  value_template: \"" + ha_yaml_config.sensor[hes].value_template + "\"";
+			}
+			break;
+		  }
+		  
+		  // entity name
+		  f.getElementsByClassName("entity")[0].value = he;
+		  // menu value code without the "case :" part
+		  f.getElementsByClassName("menu-values")[0].innerHTML = l.replace(/\s*case.*?\:\s*/i , "");
+		  // extract factor
+		  var rr = l.match(/[*]\s*[\d.]*/gi);
+		  //alert(rr);
+		  if(rr !== null) f.getElementsByClassName("dfactor")[0].value = rr[0].replace(/[*]\s*/gi, "");
+		  
+		  break;
+		
+	    case 7:
+		  // regexp to find "case i:" block
+		  var r = new RegExp("case\\s*"+i+"\\s*:", "gi");
+		  // find the case block
+		  var l = f_menu_values.find( function(v) { return this.test(v); }, r );
+		  // extract ESPH entity
+		  var ee = l.replace(/.*=.*id\(/i , "").replace(/\).*/i , "");
+		  // set entity type
+		  var he;
+		  switch(ee) {
+		  case "${unitName}_motion":
+		    he = ee;
+		    f.getElementsByTagName("select")[0].value = "3";
+		    break
+		  default:	
+		    // extract HA entity
+		    var esphe = yaml_config.binary_sensor.find( function(v) {return (v.id == ee && v.platform == "homeassistant");} );
+			he = esphe.entity_id;
+            // ESPH entity
+			f.getElementsByClassName("esph-ent")[0].innerHTML = jsyaml.dump(esphe).replace("platform: homeassistant\n","");
+            // HA attribute and real entity
+	  	    var hes = he.replace("sensor.","");
+	        if(ha_yaml_config.sensor && ha_yaml_config.sensor[hes]) {
+			  he = ha_yaml_config.sensor[hes].value_template.match(/state_attr\(['"].*?[.].*?['"]/i)[0].replace(/(state_attr\(|'|")/gi, "");
+			  var hea = ha_yaml_config.sensor[hes].value_template.replace(/state_attr\(['"].*?[.].*?['"]/i, "").match(/['"].*?['"]/i)[0].replace(/('|")/gi, "");
+			  f.getElementsByClassName("attribute")[0].value = hea;
+			// fill template entity
+			  f.getElementsByClassName("templ-ent")[0].value = hes + "\n  value_template: \"" + ha_yaml_config.sensor[hes].value_template + "\"";
+			}
+			break;
+		  }
+		  
+		  // entity name
+		  f.getElementsByClassName("entity")[0].value = he;
+		  // menu value code without the "case :" part
+		  f.getElementsByClassName("menu-values")[0].innerHTML = l.replace(/\s*case.*?\:\s*/i , "");
+		  f.getElementsByClassName("is-bin")[0].checked = true;
+		  
+		  break;
+		
+	    case 3:
+		  // regexp to find "case i:" block
+		  var r = new RegExp("case\\s*"+i+"\\s*:", "gi");
+		  // find the case block for menu values
+		  var l = f_menu_values.find( function(v) { return this.test(v); }, r );
+		  // extract ESPH entity
+		  var ee = l.replace(/.*=.*id\(/i , "").replace(/\).*/i , "");
+          // extract HA entity
+		  var esphe = yaml_config.sensor.find( function(v) {return (v.id == ee && v.platform == "homeassistant");} );
+		  he = esphe.entity_id;
+		  
+          // HA attribute and real entity
+		  var hes = he.replace("sensor.","");
+	      if(ha_yaml_config.sensor && ha_yaml_config.sensor[hes]) {
+			he = ha_yaml_config.sensor[hes].value_template.match(/state_attr\(['"].*?[.].*?['"]/i)[0].replace(/(state_attr\(|'|")/gi, "");
+			var hea = ha_yaml_config.sensor[hes].value_template.replace(/state_attr\(['"].*?[.].*?['"]/i, "").match(/['"].*?['"]/i)[0].replace(/('|")/gi, "");
+			f.getElementsByClassName("attribute")[0].value = hea;
+			// fill template entity
+			f.getElementsByClassName("templ-ent")[0].value = hes + "\n  value_template: \"" + ha_yaml_config.sensor[hes].value_template + "\"";
+		  }
+		  
+          // ESPH entity
+		  f.getElementsByClassName("esph-ent")[0].innerHTML = jsyaml.dump(esphe).replace("platform: homeassistant\n","");
+		  
+		  // entity name
+		  f.getElementsByClassName("entity")[0].value = he;
+		  // menu value code without the "case :" part
+		  f.getElementsByClassName("menu-values")[0].innerHTML = l.replace(/\s*case.*?\:\s*/i , "");
+		  // extract factor
+		  var rr = l.match(/[*]\s*[\d.]*/gi);
+		  if(rr !== null) f.getElementsByClassName("dfactor")[0].value = rr[0].replace(/[*]\s*/gi, "");
+		  
+		  // find the rotary block
+		  l = f_menu_set_rotary.find( function(v) { return this.test(v); }, r );
+		  // rotary code without the "case :" part
+		  f.getElementsByClassName("set-rotary")[0].innerHTML = l.replace(/\s*case.*?\:\s*/i , "");
+		  
+		  // find action script
+		  var as = yaml_config.script.find( function(v) {return (v.id == "menu_actions");} ).then;
+		  // find by "== i;" block in condition
+		  var ar = new RegExp("==\\s*"+i+"\;", "gi");
+		  // get the action block
+		  var asi = as.find( function(v) { return this.test(v.if.condition.lambda); }, ar ).if.then;
+		  // dump into the field
+		  f.getElementsByClassName("service-data")[0].innerHTML = jsyaml.dump(asi);
+		  
+		  // get from value from action script
+		  var sfrom = asi["homeassistant.service"].variables.x.match(/[\d.]*(?=\s*\+)/i);
+		  var from = 0;
+		  if (sfrom) from = Number(sfrom[0]);
+		  f.getElementsByClassName("from")[0].value = from;
+		  // get step from action script
+		  var sstep = asi["homeassistant.service"].variables.x.match(/[*]\s*[\d.]*/i);
+		  var step = 1;
+		  if(sstep) step = Number(sstep[0].replace("*",""));
+		  f.getElementsByClassName("step")[0].value = step;
+		  // calculate to value		  
+		  var to = Math.round(from + menu_length[i] * step);
+		  f.getElementsByClassName("to")[0].value = to;
+		  
+		  // Fill select
+		  var se = f.getElementsByTagName("select")[0];
+		  se.value = 0;
+          switch(asi["homeassistant.service"].service) {
+		  case "climate.set_temperature":
+  		    se.value = 1;
+		    break;
+		
+		  case "climate.set_humidity":
+  		    se.value = 2;
+		    break;
+		
+		  case "cover.set_cover_position":
+  		    se.value = 3;
+		    break;
+		
+		  case "cover.set_cover_tilt":
+  		    se.value = 4;
+		    break;
+		
+		  case "humidifier.set_humidity":
+  		    se.value = 5;
+		    break;
+		
+		  case "light.turn_on":
+  		    if(asi["homeassistant.service"].data_template.brightness !== null) se.value = 6;
+  		    if(asi["homeassistant.service"].data_template.color_temp !== null) se.value = 7;
+		    break;
+		
+		  case "media_player.volume_set":
+  		    se.value = 8;
+		    break;
+		  
+		  }
+		  
+		  break;
+		
+	    case 6:
+		  // regexp to find "case i:" block
+		  var r = new RegExp("case\\s*"+i+"\\s*:", "gi");
+		  // find the case block for menu values
+		  var l = f_menu_values.find( function(v) { return this.test(v); }, r );
+		  // extract ESPH entity
+		  var ee = l.replace(/.*=.*id\(/i , "").replace(/\).*/i , "");
+          // extract HA entity
+		  var esphe = yaml_config.sensor.find( function(v) {return (v.id == ee && v.platform == "homeassistant");} );
+		  he = esphe.entity_id;
+		  
+          // HA attribute and real entity
+		  var hes = he.replace("sensor.","");
+	      if(ha_yaml_config.sensor && ha_yaml_config.sensor[hes]) {
+			he = ha_yaml_config.sensor[hes].value_template.match(/state_attr\(['"].*?[.].*?['"]/i)[0].replace(/(state_attr\(|'|")/gi, "");
+			var hea = ha_yaml_config.sensor[hes].value_template.replace(/state_attr\(['"].*?[.].*?['"]/i, "").match(/['"].*?['"]/i)[0].replace(/('|")/gi, "");
+			f.getElementsByClassName("attribute")[0].value = hea;
+			// fill template entity
+			f.getElementsByClassName("templ-ent")[0].value = hes + "\n  value_template: \"" + ha_yaml_config.sensor[hes].value_template + "\"";
+		  }
+		  
+          // ESPH entity
+		  f.getElementsByClassName("esph-ent")[0].innerHTML = jsyaml.dump(esphe).replace("platform: homeassistant\n","");
+		  
+		  // entity name
+		  f.getElementsByClassName("entity")[0].value = he;
+		  // menu value code without the "case :" part
+		  f.getElementsByClassName("menu-values")[0].innerHTML = l.replace(/\s*case.*?\:\s*/i , "");
+		  // extract factor
+		  var rr = l.match(/[*]\s*[\d.]*/gi);
+		  if(rr !== null) f.getElementsByClassName("dfactor")[0].value = rr[0].replace(/[*]\s*/gi, "");
+		  
+		  // find the rotary block
+		  l = f_menu_set_rotary.find( function(v) { return this.test(v); }, r );
+		  // rotary code without the "case :" part
+		  f.getElementsByClassName("set-rotary")[0].innerHTML = l.replace(/\s*case.*?\:\s*/i , "");
+		  
+		  // find action script
+		  var as = yaml_config.script.find( function(v) {return (v.id == "menu_actions");} ).then;
+		  // find by "== i;" block in condition
+		  var ar = new RegExp("==\\s*"+i+"\;", "gi");
+		  // get the action block
+		  var asi = as.find( function(v) { return this.test(v.if.condition.lambda); }, ar ).if.then;
+		  // dump into the field
+		  f.getElementsByClassName("service-data")[0].innerHTML = jsyaml.dump(asi);
+		  
+		  // get from value from action script
+		  var sfrom = asi["homeassistant.service"].variables.x.match(/[\d.]*(?=\s*\+)/i);
+		  var from = 0;
+		  if (sfrom) from = Number(sfrom[0]);
+		  f.getElementsByClassName("from")[0].value = from;
+		  // get step from action script
+		  var sstep = asi["homeassistant.service"].variables.x.match(/[*]\s*[\d.]*/i);
+		  var step = 1;
+		  if(sstep) step = Number(sstep[0].replace("*",""));
+		  f.getElementsByClassName("step")[0].value = step;
+		  // calculate to value		  
+		  var to = Math.round(from + menu_length[i] * step);
+		  f.getElementsByClassName("to")[0].value = to;
+		  
+		  // Fill select
+		  var se = f.getElementsByTagName("select")[0];
+		  se.value = 0;
+          switch(asi["homeassistant.service"].service) {
+		  case "climate.set_temperature":
+  		    se.value = 1;
+		    break;
+		
+		  case "climate.set_humidity":
+  		    se.value = 2;
+		    break;
+		
+		  case "cover.set_cover_position":
+  		    se.value = 3;
+		    break;
+		
+		  case "cover.set_cover_tilt":
+  		    se.value = 4;
+		    break;
+		
+		  case "humidifier.set_humidity":
+  		    se.value = 5;
+		    break;
+		
+		  case "light.turn_on":
+  		    if(asi["homeassistant.service"].data_template.brightness !== null) se.value = 6;
+  		    if(asi["homeassistant.service"].data_template.color_temp !== null) se.value = 7;
+		    break;
+		
+		  case "media_player.volume_set":
+  		    se.value = 8;
+		    break;
+		  
+		  }
+		  
+		  break;
+		
+	    case 4:
+		  // regexp to find "case i:" block
+		  var r = new RegExp("case\\s*"+i+"\\s*:", "gi");
+		  // find the case block for menu values
+		  var l = f_menu_values.find( function(v) { return this.test(v); }, r );
+		  // extract ESPH entity
+		  var ee = l.replace(/.*=.*id\(/i , "").replace(/\).*/i , "");
+          // extract HA entity
+		  var esphe = yaml_config.binary_sensor.find( function(v) {return (v.id == ee && v.platform == "homeassistant");} );
+		  he = esphe.entity_id;
+		  
+          // HA attribute and real entity
+		  var hes = he.replace("sensor.","");
+	      if(ha_yaml_config.sensor && ha_yaml_config.sensor[hes]) {
+			he = ha_yaml_config.sensor[hes].value_template.match(/state_attr\(['"].*?[.].*?['"]/i)[0].replace(/(state_attr\(|'|")/gi, "");
+			var hea = ha_yaml_config.sensor[hes].value_template.replace(/state_attr\(['"].*?[.].*?['"]/i, "").match(/['"].*?['"]/i)[0].replace(/('|")/gi, "");
+			f.getElementsByClassName("attribute")[0].value = hea;
+			// fill template entity
+			f.getElementsByClassName("templ-ent")[0].value = hes + "\n  value_template: \"" + ha_yaml_config.sensor[hes].value_template + "\"";
+		  }
+		  
+          // ESPH entity
+		  f.getElementsByClassName("esph-ent")[0].innerHTML = jsyaml.dump(esphe).replace("platform: homeassistant\n","");
+		  
+		  // entity name
+		  f.getElementsByClassName("entity")[0].value = he;
+		  // menu value code without the "case :" part
+		  f.getElementsByClassName("menu-values")[0].innerHTML = l.replace(/\s*case.*?\:\s*/i , "");
+		  // extract factor
+		  var rr = l.match(/[*]\s*[\d.]*/gi);
+		  if(rr !== null) f.getElementsByClassName("dfactor")[0].value = rr[0].replace(/[*]\s*/gi, "");
+		  
+		  // find the rotary block
+		  l = f_menu_set_rotary.find( function(v) { return this.test(v); }, r );
+		  // rotary code without the "case :" part
+		  f.getElementsByClassName("set-rotary")[0].innerHTML = l.replace(/\s*case.*?\:\s*/i , "");
+		  
+		  // find action script
+		  var as = yaml_config.script.find( function(v) {return (v.id == "menu_actions");} ).then;
+		  // find by "== i;" block in condition
+		  var ar = new RegExp("==\\s*"+i+"\;", "gi");
+		  // get the action block
+		  var asi = as.find( function(v) { return this.test(v.if.condition.lambda); }, ar ).if.then;
+		  // dump into the on/off fields
+		  f.getElementsByClassName("service-data-on")[0].innerHTML = jsyaml.dump(asi.if.then);
+		  f.getElementsByClassName("service-data-off")[0].innerHTML = jsyaml.dump(asi.if.else);
+		  
+		  // Fill select
+		  var se = f.getElementsByTagName("select")[0];
+		  se.value = 0;
+          switch(asi.if.then["homeassistant.service"].service) {
+		  case "automation.turn_on":
+  		    se.value = 1;
+		    break;
+		
+		  case "fan.turn_on":
+  		    se.value = 2;
+		    break;
+		
+		  case "humidifier.turn_on":
+  		    se.value = 3;
+		    break;
+		
+		  case "light.turn_on":
+  		    se.value = 4;
+		    break;
+		
+		  case "lock.lock":
+  		    se.value = 5;
+		    break;
+		
+		  case "media_player.shuffle_set":
+  		    se.value = 6;
+		    break;
+		
+		  case "switch.turn_on":
+  		    se.value = 7;
+		    break;
+		  
+		  }
+  
+		  break;
+		  
+	    case 5:
+		  // find action script
+		  var as = yaml_config.script.find( function(v) {return (v.id == "menu_actions");} ).then;
+		  // find by "== i;" block in condition
+		  var ar = new RegExp("==\\s*"+i+"\;", "gi");
+		  // get the action block
+		  var asi = as.find( function(v) { return this.test(v.if.condition.lambda); }, ar ).if.then;
+		  // dump into the field
+		  f.getElementsByClassName("service-data")[0].innerHTML = jsyaml.dump(asi);
+		  
+		  // Fill select and entity based on action
+		  var he = f.getElementsByClassName("entity")[0];
+		  var se = f.getElementsByTagName("select")[0];
+		  se.value = 0;
+          switch(asi["homeassistant.service"].service) {
+		  case "automation.trigger":
+  		    se.value = 1;
+			he.value = asi["homeassistant.service"].data.entity_id;
+		    break;
+		
+		  case "cover.open_cover":
+  		    se.value = 3;
+			he.value = asi["homeassistant.service"].data.entity_id;
+		    break;
+		
+		  case "cover.close_cover":
+  		    se.value = 4;
+			he.value = asi["homeassistant.service"].data.entity_id;
+		    break;
+		
+		  case "vacuum.start":
+  		    se.value = 5;
+			he.value = asi["homeassistant.service"].data.entity_id;
+		    break;
+		
+		  case "media_player.shuffle_set":
+  		    se.value = 6;
+			he.value = asi["homeassistant.service"].data.entity_id;
+		    break;
+		
+		  case "vacuum.return_to_base":
+  		    se.value = 7;
+			he.value = asi["homeassistant.service"].data.entity_id;
+		    break;
+		  
+		  case "zha.permit":
+  		    se.value = 8;
+		    break;
+		  
+		  case "homeassistant.restart":
+  		    se.value = 9;
+		    break;
+		  
+		  default:
+		    if(asi["homeassistant.service"].service.startsWith("script.")) {
+		      se.value = 2;
+			  he.value = asi["homeassistant.service"].service;
+			}
+		  
+		  }
+  
+		  break;
+	
+	    case 2:
+		  // create submenu
+		  c = f.getElementsByClassName("item-container")[0];
+		  c.innerHTML = "";
+	      fillMenuFromArrays(menu_child[i], menu_length[i], c);
+		  break;
+		
+      }
+	}
+  
+  }
+
+  function findActValue(n) {
+    switch(n) {
+	  case "automation.trigger": return 1;
+	  case "cover.open_cover": return 3;
+	  case "cover.close_cover": return 4;  
+	  case "media_player.media_play_pause": return 5;  
+	  case "vacuum.start": return 6;  
+	  case "vacuum.return_to_base": return 7;  
+	  case "zha.permit": return 8; 
+	  case "homeassistant.restart": return 9;  
+	}
+	if(n.slice(0,7) == "script.") return 2;
   }
   
   function fillItemContent(e) {
@@ -566,7 +1159,8 @@ Scroll down for Home Assistant config<br /><br />
 	var e_dfact = e.parentElement.getElementsByClassName("dfactor")[0];
 	var dfact = e_dfact.value;
 
-	var isbin = e.parentElement.getElementsByClassName("is-bin")[0].checked;
+	var e_isbin = e.parentElement.getElementsByClassName("is-bin")[0];
+	var isbin = e_isbin.checked;
 
 	var t_attrib = attribute;
 	var t_menuval = "";
@@ -621,18 +1215,21 @@ on_value:
 	  t_menuval = "id(menu_current_value) = id(\${unitName}_temperature).state; break;";
 	  e_entity.value = "\${unitName}_temperature";
 	  e_attribute.value = "";
+	  e_isbin.checked = false;
 	  break;
 	
 	case "2":
 	  t_menuval = "id(menu_current_value) = id(\${unitName}_humidity).state; break;";
-	  e_entity.value = "\${unitName}_temperature";
+	  e_entity.value = "\${unitName}_humidity";
 	  e_attribute.value = "";
+	  e_isbin.checked = false;
 	  break;
 	
 	case "3":
 	  t_menuval = "id(menu_current_value) = id(\${unitName}_motion).state ? 1 : 0; break;";
-	  e_entity.value = "\${unitName}_temperature";
+	  e_entity.value = "\${unitName}_motion";
 	  e_attribute.value = "";
+	  e_isbin.checked = true;
 	  break;
 	  
 	}
@@ -1068,6 +1665,14 @@ on_state:
     sortable('.item-container', 'reload');
   }
   
+  function addItemAuto(e) {
+	var n = document.createElement("div");
+	n.setAttribute("class", "item");
+	n.innerHTML = menuItemBase;
+	e.appendChild(n);
+	return n;
+  }
+
   function download(filename, text) {
     var element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
@@ -1091,7 +1696,7 @@ on_state:
 	for(var i=0; i<length; i++){
 	  if(items[i].getElementsByTagName("select")[0].value == 2){
 	    // item-content -> item-base -> item-container
-	    var e_next = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("item-base")[0].getElementsByClassName("item-container")[0];
+	    var e_next = items[i].getElementsByClassName("item-container")[0];
 	    total += calcChildren(e_next);
 	  }
 	}
@@ -1178,21 +1783,23 @@ on_state:
 	  
 	  switch(f) {
 	    case "1":
-		  var lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("menu-values")[0].value.split("\n");
+		  var lines = items[i].getElementsByClassName("menu-values")[0].value.split("\n");
 		  for (t of lines) menu_values_script += "            case " + Number(menu_i + i) + ": " + t + "\n";
 		  menu_values_script += "\n";
 
-          if (items[i].getElementsByClassName("item-content")[0].getElementsByTagName("select")[0].value == "0") {
-    	    lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("templ-ent")[0].value.split("\n");
-		    for (t of lines) ha_entities += "      " + t + "\n";
+          if (items[i].getElementsByTagName("select")[0].value == "0") {
+		    if(items[i].getElementsByClassName("templ-ent")[0].value != "") {
+		      lines = items[i].getElementsByClassName("templ-ent")[0].value.split("\n");
+		      for (t of lines) ha_entities += "      " + t + "\n";
+		    }
 
             esph_sensors += "  - platform: homeassistant\n"
-		    lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("esph-ent")[0].value.split("\n");
+		    lines = items[i].getElementsByClassName("esph-ent")[0].value.split("\n");
 		    for (t of lines) esph_sensors += "    " + t + "\n";
 		    esph_sensors += "\n";
 		  }
 		  
-		  if( items[i].getElementsByClassName("item-content")[0].getElementsByClassName("is-bin")[0].checked ) menu_functions[menu_i + i] = 7;
+		  if( items[i].getElementsByClassName("is-bin")[0].checked ) menu_functions[menu_i + i] = 7;
           
 		  break;
 		  
@@ -1206,17 +1813,17 @@ on_state:
 		  break;
         
 	    case "3":
-		  var from = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("from")[0].value;
-          var to = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("to")[0].value;
-	      var step = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("step")[0].value;
+		  var from = items[i].getElementsByClassName("from")[0].value;
+          var to = items[i].getElementsByClassName("to")[0].value;
+	      var step = items[i].getElementsByClassName("step")[0].value;
 
 		  menu_length[menu_i + i] = Math.round((to - from)/step);
 
-		  var lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("menu-values")[0].value.split("\n");
+		  var lines = items[i].getElementsByClassName("menu-values")[0].value.split("\n");
 		  for (t of lines) menu_values_script += "            case " + Number(menu_i + i) + ": " + t + "\n";
 		  menu_values_script += "\n";
 
-          lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("set-rotary")[0].value.split("\n");
+          lines = items[i].getElementsByClassName("set-rotary")[0].value.split("\n");
 		  for (t of lines) menu_rotary_script += "            case " + Number(menu_i + i) + ": " + t + "\n";
 		  menu_rotary_script += "\n";
 		  
@@ -1224,26 +1831,28 @@ on_state:
           condition:
             lambda: 'return id(menu_current_node) == ` + Number(menu_i + i) + `;'
           then:\n`;
-		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("service-data")[0].value.split("\n");
+		  lines = items[i].getElementsByClassName("service-data")[0].value.split("\n");
 		  for (t of lines) menu_actions_script += "            " + t + "\n";
 		  menu_actions_script += "\n";
 		  
-		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("templ-ent")[0].value.split("\n");
-		  for (t of lines) ha_entities += "      " + t + "\n";
+		  if(items[i].getElementsByClassName("templ-ent")[0].value != "") {
+		    lines = items[i].getElementsByClassName("templ-ent")[0].value.split("\n");
+		    for (t of lines) ha_entities += "      " + t + "\n";
+		  }
 
           esph_sensors += "  - platform: homeassistant\n"
-		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("esph-ent")[0].value.split("\n");
+		  lines = items[i].getElementsByClassName("esph-ent")[0].value.split("\n");
 		  for (t of lines) esph_sensors += "    " + t + "\n";
 		  esph_sensors += "\n";
           
 		  break;
 
 	    case "4":
-		  var lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("menu-values")[0].value.split("\n");
+		  var lines = items[i].getElementsByClassName("menu-values")[0].value.split("\n");
 		  for (t of lines) menu_values_script += "            case " + Number(menu_i + i) + ": " + t + "\n";
 		  menu_values_script += "\n";
 
-          lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("set-rotary")[0].value.split("\n");
+          lines = items[i].getElementsByClassName("set-rotary")[0].value.split("\n");
 		  for (t of lines) menu_rotary_script += "            case " + Number(menu_i + i) + ": " + t + "\n";
 		  menu_rotary_script += "\n";
 		  
@@ -1255,18 +1864,20 @@ on_state:
               condition:
                 lambda: 'return id(rotary_dial).state;'
               then:\n`;
-		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("service-data-on")[0].value.split("\n");
+		  lines = items[i].getElementsByClassName("service-data-on")[0].value.split("\n");
 		  for (t of lines) menu_actions_script += "                " + t + "\n";
 		  menu_actions_script += "              else:\n";
-		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("service-data-off")[0].value.split("\n");
+		  lines = items[i].getElementsByClassName("service-data-off")[0].value.split("\n");
 		  for (t of lines) menu_actions_script += "                " + t + "\n";
 		  menu_actions_script += "\n";
 		  
-		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("templ-ent")[0].value.split("\n");
-		  for (t of lines) ha_entities += "      " + t + "\n";
+		  if(items[i].getElementsByClassName("templ-ent")[0].value != "") {
+		    lines = items[i].getElementsByClassName("templ-ent")[0].value.split("\n");
+		    for (t of lines) ha_entities += "      " + t + "\n";
+		  }
 
           esph_bin_sensors += "  - platform: homeassistant\n"
-		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("esph-ent")[0].value.split("\n");
+		  lines = items[i].getElementsByClassName("esph-ent")[0].value.split("\n");
 		  for (t of lines) esph_bin_sensors += "    " + t + "\n";
 		  esph_bin_sensors += "\n";
           
@@ -1277,24 +1888,24 @@ on_state:
           condition:
             lambda: 'return id(menu_current_node) == ` + Number(menu_i + i) + `;'
           then:\n`;
-		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("service-data")[0].value.split("\n");
+		  lines = items[i].getElementsByClassName("service-data")[0].value.split("\n");
 		  for (t of lines) menu_actions_script += "            " + t + "\n";
 		  menu_actions_script += "\n";
 		  
           break;
 		  
 	    case "6":
-		  var from = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("from")[0].value;
-          var to = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("to")[0].value;
-	      var step = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("step")[0].value;
+		  var from = items[i].getElementsByClassName("from")[0].value;
+          var to = items[i].getElementsByClassName("to")[0].value;
+	      var step = items[i].getElementsByClassName("step")[0].value;
 
 		  menu_length[menu_i + i] = Math.round((to - from)/step);
 
-		  var lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("menu-values")[0].value.split("\n");
+		  var lines = items[i].getElementsByClassName("menu-values")[0].value.split("\n");
 		  for (t of lines) menu_values_script += "            case " + Number(menu_i + i) + ": " + t + "\n";
 		  menu_values_script += "\n";
 
-          lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("set-rotary")[0].value.split("\n");
+          lines = items[i].getElementsByClassName("set-rotary")[0].value.split("\n");
 		  for (t of lines) menu_rotary_script += "            case " + Number(menu_i + i) + ": " + t + "\n";
 		  menu_rotary_script += "\n";
 		  
@@ -1302,15 +1913,17 @@ on_state:
           condition:
             lambda: 'return id(menu_current_node) == ` + Number(menu_i + i) + `;'
           then:\n`;
-		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("service-data")[0].value.split("\n");
+		  lines = items[i].getElementsByClassName("service-data")[0].value.split("\n");
 		  for (t of lines) menu_actions_script += "            " + t + "\n";
 		  menu_actions_script += "\n";
 		  
-		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("templ-ent")[0].value.split("\n");
-		  for (t of lines) ha_entities += "      " + t + "\n";
+		  if(items[i].getElementsByClassName("templ-ent")[0].value != "") {
+		    lines = items[i].getElementsByClassName("templ-ent")[0].value.split("\n");
+		    for (t of lines) ha_entities += "      " + t + "\n";
+		  }
 
           esph_sensors += "  - platform: homeassistant\n"
-		  lines = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("adv-set")[0].getElementsByClassName("esph-ent")[0].value.split("\n");
+		  lines = items[i].getElementsByClassName("esph-ent")[0].value.split("\n");
 		  for (t of lines) esph_sensors += "    " + t + "\n";
 		  esph_sensors += "\n";
           
@@ -1328,7 +1941,7 @@ on_state:
 	  var f = items[i].getElementsByTagName("select")[0].value;
 
 	  if (f == 2){
-        var e_next = items[i].getElementsByClassName("item-content")[0].getElementsByClassName("item-base")[0].getElementsByClassName("item-container")[0];
+        var e_next = items[i].getElementsByClassName("item-container")[0];
 		createMenu(e_next);
 	  }
 
@@ -1415,7 +2028,7 @@ substitutions:
   encoderSwitch: ${document.getElementById("encs-pin").value}
   i2cData: ${document.getElementById("i2cd-pin").value}
   i2cClock: ${document.getElementById("i2cc-pin").value}
-  ${document.getElementById("pir-pin").value == "None" ? "" : "pir: "+document.getElementById("pir-pin").value}
+  ${document.getElementById("pir-pin").value == "" ? "" : "pir: "+document.getElementById("pir-pin").value}
   button: ${document.getElementById("but-pin").value}
   
   # Menu system
@@ -1549,7 +2162,7 @@ ${button_1_ss_script}
           id(menu_set_mode) = false;
           id(rotary_dial).set_value(0);	
 
-${document.getElementById("pir-pin").value == "None" ? "" : `  - id: s_blankout
+${document.getElementById("pir-pin").value == "" ? "" : `  - id: s_blankout
     mode: restart
     then:
       - if:
@@ -1606,21 +2219,16 @@ display:
     update_interval: 0.1s
     id: idisplay
     lambda: |-
+      if (!id(api_connected).state){
+
+        // Little animation before API is online
+        it.line(56, 32, 56+id(wi), 32);
+
+      } else {
+    
       // Blank screen if PIR off
       if (id(s_blank)) { it.fill(COLOR_OFF); return; }
       
-      if (!id(api_connected).state){
-        // Little animation before API is online
-        it.printf(64, 0, id(tiny_font), TextAlign::TOP_CENTER, "Connecting...");
-        it.filled_circle(64, 40, 20);
-        it.filled_circle(64, 40, 15, COLOR_OFF);
-        unsigned char wii = floor(id(wi)/2);
-        if(wii > 0 && wii < 5) it.filled_rectangle(65, 20, 20, 21, COLOR_OFF);
-        if(wii > 1 && wii < 6) it.filled_rectangle(65, 40, 20, 21, COLOR_OFF);
-        if(wii > 2 && wii < 7) it.filled_rectangle(44, 40, 21, 21, COLOR_OFF);
-        if(wii > 3 && wii < 8) it.filled_rectangle(44, 20, 21, 21, COLOR_OFF);
-      } else {
-    
       // Screensaver is always node 0
       if(id(menu_current_node)==0) {
 
@@ -1923,7 +2531,7 @@ binary_sensor:
               - script.execute: menu_values
               - script.execute: ss_timeout
 
-${document.getElementById("pir-pin").value == "None" ? "" : `  - platform: gpio
+${document.getElementById("pir-pin").value == "" ? "" : `  - platform: gpio
     pin: \${pir}
     id: \${unitName}_motion
     name: "\${friendlyName} Motion"
