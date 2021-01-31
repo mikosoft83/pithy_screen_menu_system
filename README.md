@@ -23,7 +23,7 @@ The menu generator __doesn't do any sanity checks__. You are in charge of fillin
 #### Loading existing config
 If you want to __load a previously generated YAML file__, click the Select config file button. It will read the file and if it finds any Home Assistant entities it will list all of them and ask to paste config from __template entities__ in the indicated format. The value template of these entities is expected to contain only ``state_attr`` function to report an attribute value.
 
-After that click Load config button and the config will be loaded.
+After that click Load config button and the config will be loaded. __Please be aware that it will only reliably load config files that are as they were generated.__ If you modified your config afterwards the config load may fail or yield unpredictable results.
 
 #### Creating new config
 First __choose your device type__, device name and friendly name. ESPHome and Home Assistant usually use the device name to connect to the device so it __needs to be unique__. Fill in the WiFi credentials. If you assembled the hardware yourself you can set the pins, otherwise leave as is. __If you are using non-Pithy hardware__ such as custom made device and need to change pins to values not present in dropdowns, you can modify them in the generated config under ``globals:`` section.
