@@ -16,7 +16,7 @@ There are two ways to setup the menu
 
 ### Using config generator
 
-Config generator is in the [menu_generator](menu_generator) folder. The best way to use it is to clone/download the files to your computer and running from there.
+Config generator is in the [menu_generator](menu_generator) folder. The best way to use it is to clone/download the files to your computer and running from there. You can also use the [githack hosted version](https://rawcdn.githack.com/mikosoft83/pithy_screen_menu_system/a62acf32be99deb8db09b108542ffee5c1e66067/menu_generator/index.html).
 
 The menu generator __doesn't do any sanity checks__. You are in charge of filling in all the data correctly. __Every field of every item must be filled in__, the only __exceptions__ are Shortcuts in Screensaver section and the "Attribute" field in case of menu items that won't use it. If you manage to make a mistake you will only find out during compile or operation so be careful. Checks may be added in future versions.
 
