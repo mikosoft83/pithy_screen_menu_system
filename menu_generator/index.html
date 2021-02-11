@@ -195,6 +195,7 @@
 <h1>Menu Configurator for Pithy with screen</h1>
 <div class="frame">
 <h2>Config load</h2>
+Use this section if you want to open a previously generated YAML configuration.<br />
 <button onclick="document.getElementById('infile').click();" class="create-button">Select config file</button><input type="file" id="infile" oninput="prepareFile(this)"  style="display: none">
 <span id="infile-name"></span><br />
 <div style="display: none" id="infile-adv">
@@ -228,6 +229,9 @@ Please copy all <u>template entities</u> from this list into the box below.<br /
 <input type="text" id="unit-name" value="pithy_" oninput="updateFriendlyName(this)"><br />
 <label>Friendly name:<span class="tooltip-bottom">Any name you like. Will be used to name internal sensors (temperature, humidity, PIR) if installed.</span></label>
 <input type="text" id="friendly-name" value="Pithy"><br />
+<h6 onclick="showHide(document.getElementById('hw-adv-set'))">Advanced settings</h6>
+<div style="display: none" id="hw-adv-set">
+<h2>Hardware</h2>
 <label>Board platform:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
 <select id="board-platform">
 <option selected>ESP8266</option>
@@ -236,23 +240,6 @@ Please copy all <u>template entities</u> from this list into the box below.<br /
 <select id="board-name">
 <option selected value="d1_mini">Wemos D1 mini</option>
 </select>
-</div>
-<div class="frame">
-<h2>WiFi</h2>
-<label>Your WiFi credentials:<span class="tooltip-bottom">Enter the WiFi credentials to which you want your device to connect to</span></label><br />
-<label>SSID:<span class="tooltip-bottom">WiFi name</span></label> <input type="text" id="wifi-ssid">
-<label>Password:</label> <input type="text" id="wifi-pass"><br />
-<label>Fallback WiFi AP credentials:<span class="tooltip-bottom">If connection fails, the device will create its own WiFi hotspot with these credentials</span></label><br />
-<label>SSID:<span class="tooltip-bottom">WiFi name</span></label> <input type="text" id="ap-wifi-ssid" value="pithy">
-<label>Password:</label> <input type="text" id="ap-wifi-pass" value="pithypithy"><br />
-</div>
-<div class="frame">
-<h2>Management</h2>
-<label>API password:<span class="tooltip-bottom">For connecting to Home Assistant</span></label> <input type="text" id="api-pass" value="pithy"><br />
-<label>OTA password:<span class="tooltip-bottom">For over-the-air updates (flashing)</span></label> <input type="text" id="ota-pass" value="pithy"><br />
-</div>
-<div class="frame">
-<h2>Hardware</h2>
 <label>PIR pin:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
 <input type="text" id="pir-pin"><br />
 <label>Button pin:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
@@ -268,6 +255,19 @@ Please copy all <u>template entities</u> from this list into the box below.<br /
 <label>Encoder switch pin:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
 <input type="text" id="encs-pin" value="D7">
 </div>
+</div>
+<div class="frame">
+<h2>WiFi</h2>
+<label>Your WiFi credentials:<span class="tooltip-bottom">Enter the WiFi credentials to which you want your device to connect to</span></label><br />
+<label>WiFi name (SSID):</label> <input type="text" id="wifi-ssid">
+<label>Password:<span class="tooltip-bottom">You can use !secret here</span></label> <input type="text" id="wifi-pass"><br />
+<label>Fallback WiFi access point credentials:<span class="tooltip-bottom">If connection fails, the device will create its own WiFi hotspot with these credentials</span></label><br />
+<label>WiFi name (SSID):</label> <input type="text" id="ap-wifi-ssid" value="pithy">
+<label>Password:<span class="tooltip-bottom">You can use !secret here</span></label> <input type="text" id="ap-wifi-pass" value="pithypithy"><br />
+<h2>Management</h2>
+<label>API password:<span class="tooltip-bottom">This password is used to connect to Home Assistant. You can use !secret here</span></label> <input type="text" id="api-pass" value="pithy"><br />
+<label>OTA password:<span class="tooltip-bottom">For over-the-air updates (flashing). You can use !secret here</span></label> <input type="text" id="ota-pass" value="pithy"><br />
+</div>
 <div>
 <input type="hidden" id="direct-children" class="direct-children" value="0"><input type="hidden" id="all-children" class="all-children" value="0">
 <div>
@@ -276,7 +276,7 @@ Please copy all <u>template entities</u> from this list into the box below.<br /
   <div class="item-saver"><h3>Screensaver</h3><br />
 	<div class="blueborder">
       <label class="blue">Encoder shortcut<span class="tooltip">Define action to perform when you press the encoder on screensaver screen</span></label><br />
-	  <label>Entity to perform action on:<span class="tooltip">Home Assistant entity name. If you want to trigger and automation or a script, put the name here.</span></label><input id="enc-ss-entity" class="entity" type="text" oninput="fillActCode(this.parentElement.getElementsByTagName('select')[0])"><br />
+	  <label>Entity to perform action on:<span class="tooltip">Home Assistant entity name. If you want to trigger an automation or a script, put the name here.</span></label><input id="enc-ss-entity" class="entity" type="text" oninput="fillActCode(this.parentElement.getElementsByTagName('select')[0])"><br />
 	  <label>What to do:<span class="tooltip">Choose from predefined actions. If you want to create your own, choose custom and click Advanced settings. If you want to modify one of the predefined, first choose the predefined action, then Custom.</span></label>
 	  <select id="enc-ss-act" onchange="fillActCode(this, true)">
 	  <option>None</option>
@@ -298,7 +298,7 @@ Please copy all <u>template entities</u> from this list into the box below.<br /
 	</div>
 	<div class="blueborder">
       <label class="blue">Button shortcut<span class="tooltip">Define action to perform when you press the button on screensaver screen</span></label><br />
-	  <label>Entity to perform action on:<span class="tooltip">Home Assistant entity name. If you want to trigger and automation or a script, put the name here.</span></label><input id="but-ss-entity" class="entity" type="text" oninput="fillActCode(this.parentElement.getElementsByTagName('select')[0])"><br />
+	  <label>Entity to perform action on:<span class="tooltip">Home Assistant entity name. If you want to trigger an automation or a script, put the name here.</span></label><input id="but-ss-entity" class="entity" type="text" oninput="fillActCode(this.parentElement.getElementsByTagName('select')[0])"><br />
 	  <label>What to do:<span class="tooltip">Choose from predefined actions. If you want to create your own, choose custom and click Advanced settings. If you want to modify one of the predefined, first choose the predefined action, then Custom.</span></label>
 	  <select id="but-ss-act" onchange="fillActCode(this, true)">
 	  <option>None</option>
@@ -346,7 +346,7 @@ Scroll down for Home Assistant config<br /><br />
   var menuItemBase = `
     <h3>Menu item</h3> <span class="small-link" onclick="showHide(this.parentElement.getElementsByClassName('item-content')[0])">Show/hide settings</span><br />
 	<label>Label:<span class="tooltip">This is the text that will show on the screen</span></label><input id="label" class="label" type="text">
-    <label>Type:<span class="tooltip">What should this menu item do</span></label>
+    <label>Type:<span class="tooltip">What this menu item should do</span></label>
 	<select id="type" onchange="fillItemContent(this)">
 	  <option>-- Please choose one --</option>
 	  <option value="1">Display value</option>
@@ -1020,9 +1020,9 @@ Scroll down for Home Assistant config<br /><br />
 	var i = e.value;
 	var t = "";
 	switch(i) {
-	  case "1": t = `<label>Entity to display:<span class="tooltip">Home Assistant entity name</span></label><input id="entity" class="entity" type="text" oninput="fillDispCode(this)"> <label>Attribute (leave empty if none):<span class="tooltip">Attribute from Home Assistant entity</span></label><input id="attribute" class="attribute" type="text" oninput="fillDispCode(this)"><br />
-      <label>Display factor:<span class="tooltip">Number to multiply the HA entity value by. Useful if the range is e.g. 0 - 1 but you want to show it as 0 - 100.</span></label><input id="dfactor" class="dfactor" type="number" oninput="fillDispCode(this)" value="1"><br />
-	  <input type="checkbox" id="is-bin" class="is-bin" oninput="fillDispCode(this)"><label>Binary entity<span class="tooltip">Uncheck if entity has range of values, check if it is only on or off</span></label><br />
+	  case "1": t = `<label>Entity to display:<span class="tooltip">Home Assistant entity name</span></label><input id="entity" class="entity" type="text" oninput="fillDispCode(this)">
+	  <label>Attribute (leave empty if none):<span class="tooltip">Attribute from Home Assistant entity</span></label><input id="attribute" class="attribute" type="text" oninput="fillDispCode(this)">
+	  <input type="checkbox" id="is-bin" class="is-bin" oninput="fillDispCode(this)"><label>Entity is binary<span class="tooltip">Uncheck if entity has range of values, check if it is only on or off</span></label><br />
 	  <label>Type of entity:<span class="tooltip">Choose if you want Home Assistant entity or one of the internal ones</span></label>
 	  <select onchange="fillDispCode(this, true)">
 	  <option value="0">Home Assistant</option>
@@ -1032,6 +1032,7 @@ Scroll down for Home Assistant config<br /><br />
 	  </select><br />
 	  <h6 onclick="showHide(this.parentElement.getElementsByClassName('adv-set')[0])">Advanced settings</h6>
 	  <div style="display: none" class="adv-set">
+      <label>Display factor:<span class="tooltip">Number to multiply the HA entity value by. Useful if the range is e.g. 0 - 1 but you want to show it as 0 - 100.</span></label><input id="dfactor" class="dfactor" type="number" oninput="fillDispCode(this)" value="1"><br />
 	  <label>Code for menu value display:</label><br /><textarea id="menu-values" class="menu-values" rows="2"></textarea><br />
 	  <label>ESPHome entity:</label><br /><textarea id="esph-ent" class="esph-ent" rows="14"></textarea><br />
 	  <label>HomeAssistant template entity:</label><br /><textarea id="templ-ent" class="templ-ent" rows="3"></textarea><br />
@@ -1042,8 +1043,6 @@ Scroll down for Home Assistant config<br /><br />
 	  break;
 	  case "3": t = `
 	  <label>Entity to change:<span class="tooltip">Home Assistant entity name</span></label><input id="entity" class="entity" type="text" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0])"><label>Attribute (leave empty if none):<span class="tooltip">Attribute from Home Assistant entity</span></label><input id="attribute" class="attribute" type="text" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0])"><br />
-	  <label>Range from:<span class="tooltip">Lowest value for this entity or attribute</span></label><input id="from" class="from" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0])" value="0"><label>to:<span class="tooltip">Highest value for this entity or attribute</span></label><input id="to" class="to" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0])" value="100"><label>step:<span class="tooltip">On each turn of the dial the entity or attribute value will be incremented by this number</span></label><input id="step" class="step" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0])" value="1"><br />
-	  <label>Display factor:<span class="tooltip">Number to multiply the HA entity value by. Useful if the range is e.g. 0 - 1 but you want to show it as 0 - 100.</span></label><input id="dfactor" class="dfactor" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0])" value="1"><br />
 	  <label>What to do on change:<span class="tooltip">Choose from predefined actions. If you want to create your own, choose custom and click Advanced settings. If you want to modify one of the predefined, first choose the predefined action, then Custom.</span></label>
 	  <select onchange="fillContCode(this, true)">
 	  <option>-- Please choose one --</option>
@@ -1057,8 +1056,11 @@ Scroll down for Home Assistant config<br /><br />
 	  <option value="7">Light temperature</option>
 	  <option value="8">Media player volume</option>
 	  </select><br />
+	  <label>Range from:<span class="tooltip">Lowest value for this entity or attribute</span></label><input id="from" class="from" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0])" value="0"><label>to:<span class="tooltip">Highest value for this entity or attribute</span></label><input id="to" class="to" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0])" value="100">
 	  <h6 onclick="showHide(this.parentElement.getElementsByClassName('adv-set')[0])">Advanced settings</h6>
 	  <div style="display: none" class="adv-set">
+      <label>Step:<span class="tooltip">On each turn of the dial the entity or attribute value will be incremented by this number</span></label><input id="step" class="step" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0])" value="1"><br />
+	  <label>Display factor:<span class="tooltip">Number to multiply the HA entity value by. Useful if the range is e.g. 0 - 1 but you want to show it as 0 - 100.</span></label><input id="dfactor" class="dfactor" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0])" value="1"><br />
 	  <label>Service data:</label><br /><textarea id="service-data" class="service-data" rows="7"></textarea><br />
 	  <label>Code for menu value display:</label><br /><textarea id="menu-values" class="menu-values" rows="2"></textarea><br />
 	  <label>Code to set rotary:</label><br /><textarea id="set-rotary" class="set-rotary" rows="2"></textarea><br />
@@ -1091,7 +1093,7 @@ Scroll down for Home Assistant config<br /><br />
 	  </div>
 	  `; break;
 	  case "5": t = `
-	  <label>Entity to perform action on:<span class="tooltip">Home Assistant entity name. If you want to trigger and automation or a script, put the name here.</span></label><input id="entity" class="entity" type="text" oninput="fillActCode(this.parentElement.getElementsByTagName('select')[0])"><br />
+	  <label>Entity to perform action on:<span class="tooltip">Home Assistant entity name. If you want to trigger an automation or a script, put the name here.</span></label><input id="entity" class="entity" type="text" oninput="fillActCode(this.parentElement.getElementsByTagName('select')[0])"><br />
 	  <label>What to do:<span class="tooltip">Choose from predefined actions. If you want to create your own, choose custom and click Advanced settings. If you want to modify one of the predefined, first choose the predefined action, then Custom.</span></label>
 	  <select onchange="fillActCode(this, true)">
 	  <option>-- Please choose one --</option>
@@ -1113,8 +1115,6 @@ Scroll down for Home Assistant config<br /><br />
 	  `; break;
 	  case "6": t = `
 	  <label>Entity to change:<span class="tooltip">Home Assistant entity name</span></label><input id="entity" class="entity" type="text" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0], false, true)"><label>Attribute (leave empty if none):<span class="tooltip">Attribute from Home Assistant entity</span></label><input id="attribute" class="attribute" type="text" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0], false, true)"><br />
-	  <label>Range from:<span class="tooltip">Lowest value for this entity or attribute</span></label><input id="from" class="from" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0], false, true)" value="0"><label>to:<span class="tooltip">Highest value for this entity or attribute</span></label><input id="to" class="to" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0], false, true)" value="100"><label>step:<span class="tooltip">On each turn of the dial the entity or attribute value will be incremented by this number</span></label><input id="step" class="step" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0], false, true)" value="1"><br />
-	  <label>Display factor:<span class="tooltip">Number to multiply the HA entity value by. Useful if the range is e.g. 0 - 1 but you want to show it as 0 - 100.</span></label><input id="dfactor" class="dfactor" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0], false, true)" value="1"><br />
 	  <label>What to do on change:<span class="tooltip">Choose from predefined actions. If you want to create your own, choose custom and click Advanced settings. If you want to modify one of the predefined, first choose the predefined action, then Custom.</span></label>
 	  <select onchange="fillContCode(this, true, true)">
 	  <option>-- Please choose one --</option>
@@ -1128,8 +1128,11 @@ Scroll down for Home Assistant config<br /><br />
 	  <option value="7">Light temperature</option>
 	  <option value="8">Media player volume</option>
 	  </select><br />
+	  <label>Range from:<span class="tooltip">Lowest value for this entity or attribute</span></label><input id="from" class="from" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0], false, true)" value="0"><label>to:<span class="tooltip">Highest value for this entity or attribute</span></label><input id="to" class="to" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0], false, true)" value="100">
 	  <h6 onclick="showHide(this.parentElement.getElementsByClassName('adv-set')[0])">Advanced settings</h6>
 	  <div style="display: none" class="adv-set">
+      <label>Step:<span class="tooltip">On each turn of the dial the entity or attribute value will be incremented by this number</span></label><input id="step" class="step" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0], false, true)" value="1"><br />
+	  <label>Display factor:<span class="tooltip">Number to multiply the HA entity value by. Useful if the range is e.g. 0 - 1 but you want to show it as 0 - 100.</span></label><input id="dfactor" class="dfactor" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0], false, true)" value="1"><br />
 	  <label>Service data:</label><br /><textarea id="service-data" class="service-data" rows="7"></textarea><br />
 	  <label>Code for menu value display:</label><br /><textarea id="menu-values" class="menu-values" rows="2"></textarea><br />
 	  <label>Code to set rotary:</label><br /><textarea id="set-rotary" class="set-rotary" rows="2"></textarea><br />
@@ -1198,7 +1201,10 @@ internal: true
 on_value:
   then:
     # Logic to correctly update menu values
-    - script.execute: menu_values
+    - script.execute: menu_values`
+
+    // for internal entities don't add this. It causes resets of encoder while setting
+    if(ent_type == 0) t_esphe +=`
     - if:
         condition:
           lambda: 'return id(menu_set_mode);'
@@ -1996,13 +2002,13 @@ esphome:
           state: ON
           
 wifi:
-  ssid: "${document.getElementById("wifi-ssid").value}"
-  password: "${document.getElementById("wifi-pass").value}"
+  ssid: ${document.getElementById("wifi-ssid").value}
+  password: ${document.getElementById("wifi-pass").value}
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "${document.getElementById("ap-wifi-ssid").value}"
-    password: "${document.getElementById("ap-wifi-pass").value}"
+    ssid: ${document.getElementById("ap-wifi-ssid").value}
+    password: ${document.getElementById("ap-wifi-pass").value}
 
 captive_portal:
 
@@ -2011,10 +2017,10 @@ logger:
 
 # Enable Home Assistant API
 api:
-  password: "${document.getElementById("api-pass").value}"
+  password: ${document.getElementById("api-pass").value}
 
 ota:
-  password: "${document.getElementById("ota-pass").value}"
+  password: ${document.getElementById("ota-pass").value}
 
 #####
 #####  CONFIGURATION BLOCK HERE
@@ -2376,6 +2382,7 @@ sensor:
 
           }
           else return x;
+      - debounce: 0.02s
     resolution: 1
     min_value: 0
     on_value:
