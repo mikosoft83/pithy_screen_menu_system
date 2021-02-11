@@ -239,7 +239,7 @@ Please copy all <u>template entities</u> from this list into the box below.<br /
 <label>Board name:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
 <select id="board-name">
 <option selected value="d1_mini">Wemos D1 mini</option>
-</select>
+</select><br />
 <label>PIR pin:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
 <input type="text" id="pir-pin"><br />
 <label>Button pin:<span class="tooltip-bottom">If you're unsure, leave as is</span></label>
@@ -455,7 +455,7 @@ Scroll down for Home Assistant config<br /><br />
 	  
 	  var se = yaml_config.sensor.filter( function(v) {return v.platform == "homeassistant";} );
 	  var bse = yaml_config.binary_sensor.filter( function(v) {return v.platform == "homeassistant";} );
-	  if(se.length && bse.length) {
+	  if(se.length || bse.length) {
 	    var s_list = "";
 		// read sensors and binary sensors
 	    se.forEach( function(v) { if(v.entity_id.startsWith("sensor.")) s_list += v.entity_id + "\n"; } );
@@ -1648,7 +1648,9 @@ on_state:
     }
 
     t_serv = `homeassistant.service:
-  service: ${tss}
+  service: ${tss}`;
+    // if there's service data
+    if(tsd) t_serv +=`
   data:
     ${tsd}`;
 
