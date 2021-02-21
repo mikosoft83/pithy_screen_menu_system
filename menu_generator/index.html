@@ -1,7 +1,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Pithy Counter Menu Generator</title>
+  <title>Pithy Screen Menu Generator</title>
   <script src="html5sortable.min.js"></script>
   <script src="js-yaml.min.js"></script>
   <style>
@@ -220,10 +220,10 @@ Please copy all <u>template entities</u> from this list into the box below.<br /
 <label>Device type:<span class="tooltip-bottom">What kind of device do you have</span></label>
 <select id="d-type" onchange="changeDevice(this)">
 <option>-- Please choose one --</option>
-<option>Screen</option>
-<option>Screen Plus</option>
+<option>Pithy Screen</option>
+<option>Pithy Screen Plus</option>
 <option>Counter</option>
-<option>Screen Plus Legacy</option>
+<option>Pithy Screen Plus Legacy</option>
 </select>
 <label>Unit name:<span class="tooltip-bottom">Name for this particular device, e.g. pithy_screen_bedroom. Must be lower case, no spaces, no symbols apart from udnerscores.</span></label>
 <input type="text" id="unit-name" value="pithy_" oninput="updateFriendlyName(this)"><br />
@@ -352,7 +352,7 @@ Scroll down for Home Assistant config<br /><br />
 	  <option value="1">Display value</option>
 	  <option value="2">Submenu</option>
 	  <option value="3">Continuous setting</option>
-	  <option value="4">Binary setting</option>
+	  <option value="4">Toggle (binary setting)</option>
 	  <option value="5">Action button</option>
 	  <option value="6">Continuous with confirmation</option>
 	</select>
@@ -385,8 +385,9 @@ Scroll down for Home Assistant config<br /><br />
 	var e_i2cc = document.getElementById("i2cc-pin");
 	var e_unit = document.getElementById("unit-name");
 	
+	// when changing this also change the names in the YAML load parser
 	switch(i){
-	  case "Screen Plus Legacy":
+	  case "Pithy Screen Plus Legacy":
 	    e_pir.value = "D0";
 		e_but.value = "TX";
 		e_i2cd.value = "D1";
@@ -394,7 +395,7 @@ Scroll down for Home Assistant config<br /><br />
 		e_unit.value = "pithy_screen_";
 		break;
 	
-	  case "Screen":
+	  case "Pithy Screen":
 	    e_pir.value = "";
 		e_but.value = "TX";
 		e_i2cd.value = "D4";
@@ -402,7 +403,7 @@ Scroll down for Home Assistant config<br /><br />
 		e_unit.value = "pithy_screen_";
 		break;
 	
-	  case "Screen Plus":
+	  case "Pithy Screen Plus":
 	    e_pir.value = "D1";
 		e_but.value = "TX";
 		e_i2cd.value = "D4";
@@ -451,7 +452,19 @@ Scroll down for Home Assistant config<br /><br />
 	
     reader.onload = function() {
 	  yaml_text = reader.result;
+	  
+	  // jsyaml doesn't play nice with secrets declaration, replace with placeholder
+	  yaml_text = yaml_text.replace(/\!secret/g, "3xC1Ampithy0tH1oNsecret");
+	  	  
       yaml_config = jsyaml.load(yaml_text);
+	  
+	  // convert secrets placeholders back to normal
+	  yaml_config.wifi.ssid = yaml_config.wifi.ssid.replace("3xC1Ampithy0tH1oNsecret", "!secret");
+	  yaml_config.wifi.password = yaml_config.wifi.password.replace("3xC1Ampithy0tH1oNsecret", "!secret");
+	  yaml_config.wifi.ap.ssid = yaml_config.wifi.ap.ssid.replace("3xC1Ampithy0tH1oNsecret", "!secret");
+	  yaml_config.wifi.ap.password = yaml_config.wifi.ap.password.replace("3xC1Ampithy0tH1oNsecret", "!secret");
+	  yaml_config.api.password = yaml_config.api.password.replace("3xC1Ampithy0tH1oNsecret", "!secret");
+	  yaml_config.ota.password = yaml_config.ota.password.replace("3xC1Ampithy0tH1oNsecret", "!secret");
 	  
 	  var se = yaml_config.sensor.filter( function(v) {return v.platform == "homeassistant";} );
 	  var bse = yaml_config.binary_sensor.filter( function(v) {return v.platform == "homeassistant";} );
@@ -506,9 +519,9 @@ Scroll down for Home Assistant config<br /><br />
 	  document.getElementById("i2cc-pin").value = yaml_config.substitutions.i2cClock;
 	  
 	  switch(yaml_config.substitutions.pir+yaml_config.substitutions.button+yaml_config.substitutions.i2cData) {
-	    case "D0TXD1": document.getElementById("d-type").value = "Screen Plus Legacy"; break;
-	    case "TXD4": document.getElementById("d-type").value = "Screen"; break;
-	    case "D1TXD4": document.getElementById("d-type").value = "Screen Plus"; break;
+	    case "D0TXD1": document.getElementById("d-type").value = "Pithy Screen Plus Legacy"; break;
+	    case "TXD4": document.getElementById("d-type").value = "Pithy Screen"; break;
+	    case "D1TXD4": document.getElementById("d-type").value = "Pithy Screen Plus"; break;
 	    case "D0D1D4": document.getElementById("d-type").value = "Counter"; break;
 	  }
 	  
@@ -1055,6 +1068,7 @@ Scroll down for Home Assistant config<br /><br />
 	  <option value="6">Light brightness</option>
 	  <option value="7">Light temperature</option>
 	  <option value="8">Media player volume</option>
+	  <option value="9">Number helper (Input number)</option>
 	  </select><br />
 	  <label>Range from:<span class="tooltip">Lowest value for this entity or attribute</span></label><input id="from" class="from" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0])" value="0"><label>to:<span class="tooltip">Highest value for this entity or attribute</span></label><input id="to" class="to" type="number" oninput="fillContCode(this.parentElement.getElementsByTagName('select')[0])" value="100">
 	  <h6 onclick="showHide(this.parentElement.getElementsByClassName('adv-set')[0])">Advanced settings</h6>
@@ -1081,6 +1095,7 @@ Scroll down for Home Assistant config<br /><br />
 	  <option value="5">Lock lock/unlock</option>
 	  <option value="6">Media player shuffle on/off</option>
 	  <option value="7">Switch on/off</option>
+	  <option value="8">Toggle helper (Input boolean) on/off</option>
 	  </select><br />
 	  <h6 onclick="showHide(this.parentElement.getElementsByClassName('adv-set')[0])">Advanced settings</h6>
 	  <div style="display: none" class="adv-set">
@@ -1295,6 +1310,9 @@ on_value:
 	var t_ha_name = "";
 	var t_esph_name = "";
 	
+	// Hopefully temporary fix for brightness and color temp issue with template sensors for lights
+	var t_fix_1 = "";
+	
 	switch(i) {
 	
 	  case "0": return;	break;
@@ -1357,6 +1375,7 @@ on_value:
 	  if(r) to = 255;
 	  if(r) step = 1;
 	  if(r) dfact = 1;
+	  t_fix_1 = " | int | round(0) ";
 	  break;
 	
 	  case "7":
@@ -1367,6 +1386,7 @@ on_value:
 	  if(r) to = "";
 	  if(r) step = 1;
 	  if(r) dfact = 1;
+	  t_fix_1 = " | int | round(0) ";
 	  break;
 	
 	  case "8":
@@ -1377,6 +1397,16 @@ on_value:
 	  if(r) to = 1;
 	  if(r) step = 0.01;
 	  if(r) dfact = 100;
+	  break;
+	
+	  case "9":
+      tss ="input_number.set_value";
+      tsd = "value";
+	  t_attrib = "";
+	  if(r) from = 0;
+	  if(r) to = 100;
+	  if(r) step = 1;
+	  if(r) dfact = 1;
 	  break;
 	
     }
@@ -1395,7 +1425,7 @@ on_value:
 	else {
 	  t_ha_name = "sensor.pithy_" + t_esph_name;
 	  t_hae = `pithy_${t_esph_name}:
-  value_template: "{{ state_attr('${entity}', '${t_attrib}') }}"`;
+  value_template: "{{ state_attr('${entity}', '${t_attrib}') ${t_fix_1}}}"`;
 	}
 
 	t_esphe = `name: "HA sensor ${t_ha_name}"
@@ -1422,7 +1452,7 @@ on_value:
 	
 	e_serv.value = t_serv;
 
-	if(!(t_attrib == "")) e_attribute.value = t_attrib;
+	if(i != 0 ) e_attribute.value = t_attrib;
 	
 	e_esphe.value = t_esphe;
 	
@@ -1526,6 +1556,11 @@ on_value:
       t_attrib = "";
 	  break;
 	
+	  case "8":  
+	  tsson = "input_boolean.turn_on";
+	  tssoff = "input_boolean.turn_off";
+      t_attrib = "";
+	  break;
     }
 
     t_serv_on = `homeassistant.service:
